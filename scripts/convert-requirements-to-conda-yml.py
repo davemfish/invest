@@ -23,7 +23,6 @@ SCM_MAP = {
     'git': 'git',
 }
 
-PYTHON_REQUIREMENT = 'python>=3.7.0,<3.8'
 
 
 def build_environment_from_requirements(cli_args):
@@ -60,7 +59,7 @@ def build_environment_from_requirements(cli_args):
 
     pip_requirements = set([])
     # conda likes it when you list pip if you're using pip.
-    conda_requirements = set([PYTHON_REQUIREMENT, 'pip'])
+    conda_requirements = set(['pip'])
     for requirement_file in requirements_files:
         for line in open(requirement_file):
             line = line.strip()
