@@ -95,7 +95,7 @@ jobs:
                   activate-environment: env
                   auto-update-conda: true 
                   python-version: ${{ matrix.python-version }}
-                  channels: conda-forge, anaconda
+                  channels: conda-forge
             
             - name: Install dependencies MacOS
               if: matrix.os != 'windows-latest'
