@@ -104,7 +104,7 @@ jobs:
                   conda upgrade -y pip setuptools
                   conda install Cython requests numpy
                   python ./scripts/convert-requirements-to-conda-yml.py requirements.txt requirements-dev.txt requirements-gui.txt > requirements-all.yml
-                  conda env update --file requirements-all.yml
+                  conda env update --name env --file requirements-all.yml
                   python setup.py install
 
             - name: Run model tests

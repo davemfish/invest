@@ -10,9 +10,6 @@ import requests
 
 FEEDSTOCK_URL = 'https://github.com/conda-forge/{package}-feedstock'
 YML_TEMPLATE = """
-channels:
-- conda-forge
-- default
 dependencies:
 {conda_dependencies}
 {pip_dependencies}
