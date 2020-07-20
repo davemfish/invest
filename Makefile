@@ -12,9 +12,9 @@ GIT_UG_REPO                  := https://github.com/natcap/invest.users-guide
 GIT_UG_REPO_PATH             := doc/users-guide
 GIT_UG_REPO_REV              := 3516a472b93a282db1b695681c0fb41b6372cd70
 
-GIT_GUI_REPO                 := https://github.com/davemfish/invest-gui.git
+GIT_GUI_REPO                 := https://github.com/davemfish/invest-workbench.git
 GIT_GUI_REPO_PATH            := gui
-GIT_GUI_REPO_REV             := 33a5aa54923af5e115f1928b29ff22077115cb6b
+GIT_GUI_REPO_REV             := 5da6d4dbe0e298045c824eeb73dd32a0156fcadc
 
 ENV = env
 ifeq ($(OS),Windows_NT)
