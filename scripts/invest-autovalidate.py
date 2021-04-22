@@ -68,6 +68,8 @@ def main(sampledatadir):
 
     for datastack_path in datastacks:
         paramset = datastack.extract_parameter_set(datastack_path)
+        # Validate functions require a workspace_dir key/value,
+        # But we don't think it should be defined in sample datastack files.
         if 'workspace_dir' in paramset.args and \
                 paramset.args['workspace_dir'] != '':
             msg = (
