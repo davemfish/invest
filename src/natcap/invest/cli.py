@@ -590,8 +590,9 @@ def main(user_args=None):
 
     if args.subcommand == 'serve':
         import natcap.invest.ui_server
-        natcap.invest.ui_server.app.run(port=args.port)
+        natcap.invest.ui_server.app.run(port=args.port, debug=True)
         parser.exit(0)
+
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
