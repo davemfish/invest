@@ -168,12 +168,12 @@ ARGS_SPEC = {
                 "Landcover codes match those in the biophysical table and in "
                 "the landcover transitions table."
             ),
-            "name": "Landcover Snapshots Table",
+            "name": "LULC snapshots table",
         },
         "analysis_year": {
             "type": "number",
             "required": False,
-            "name": "Analysis Year",
+            "name": "analysis year",
             "about": (
                 "An analysis year extends the transient analysis "
                 "beyond the transition years. If not provided, the "
@@ -181,7 +181,7 @@ ARGS_SPEC = {
             ),
         },
         "biophysical_table_path": {
-            "name": "Biophysical Table",
+            "name": "biophysical table",
             "type": "csv",
             "required": True,
             "validation_options": {
@@ -213,7 +213,7 @@ ARGS_SPEC = {
             ),
         },
         "landcover_transitions_table": {
-            "name": "Landcover Transitions Table",
+            "name": "LULC transitions table",
             "type": "csv",
             "validation_options": {
                 "required_fields": ['lulc-class'],
@@ -240,15 +240,16 @@ ARGS_SPEC = {
             ),
         },
         "do_economic_analysis": {
-            "name": "Calculate Net Present Value of Sequestered Carbon",
+            "name": "do valuation",
             "type": "boolean",
             "required": False,
             "about": (
                 "A boolean value indicating whether the model should run an "
-                "economic analysis."),
+                "economic analysis calculating the net present value of "
+                "sequestered carbon."),
         },
         "use_price_table": {
-            "name": "Use Price Table",
+            "name": "use price table",
             "type": "boolean",
             "required": False,
             "about": (
@@ -257,13 +258,13 @@ ARGS_SPEC = {
                 "is provided and to be used instead."),
         },
         "price": {
-            "name": "Price",
+            "name": "price",
             "type": "number",
             "required": "do_economic_analysis and (not use_price_table)",
             "about": "The price per Megatonne CO2e at the base year.",
         },
         "inflation_rate": {
-            "name": "Interest Rate (%)",
+            "name": "interest rate",
             "type": "number",
             "required": "do_economic_analysis and (not use_price_table)",
             "about": (
@@ -271,7 +272,7 @@ ARGS_SPEC = {
                 "5 would represent a 5% inflation rate."),
         },
         "price_table_path": {
-            "name": "Price Table",
+            "name": "price table",
             "type": "csv",
             "required": "use_price_table",
             "about": (
@@ -282,7 +283,7 @@ ARGS_SPEC = {
                 "year, if provided."),
         },
         "discount_rate": {
-            "name": "Discount Rate (%)",
+            "name": "discount rate",
             "type": "number",
             "required": "do_economic_analysis",
             "about": (
@@ -399,8 +400,6 @@ def execute(args):
               [path for (year, path) in sorted(aligned_lulc_paths.items())],
               ['near']*len(aligned_lulc_paths),
               target_pixel_size, 'intersection'),
-        hash_algorithm='md5',
-        copy_duplicate_artifact=True,
         target_path_list=aligned_lulc_paths.values(),
         task_name='Align input landcover rasters.')
 
@@ -1295,7 +1294,7 @@ def _calculate_npv(
             npv[:] = NODATA_FLOAT32_MIN
 
             matrix_sum = numpy.zeros(npv.shape, dtype=numpy.float32)
-            valid_pixels = numpy.ones(npv.shape, dtype=numpy.bool)
+            valid_pixels = numpy.ones(npv.shape, dtype=bool)
             for matrix in sequestration_matrices:
                 valid_pixels &= ~numpy.isclose(matrix, NODATA_FLOAT32_MIN)
                 matrix_sum[valid_pixels] += matrix[valid_pixels]
@@ -1570,7 +1569,7 @@ def _calculate_net_sequestration(
         # and then assume that the Emissions raster has the extra spatial
         # nuances of the landscape (like nodata holes).
         valid_accumulation_pixels = numpy.ones(accumulation_matrix.shape,
-                                               dtype=numpy.bool)
+                                               dtype=bool)
         if accumulation_nodata is not None:
             valid_accumulation_pixels &= (
                 ~numpy.isclose(accumulation_matrix, accumulation_nodata))
@@ -1695,7 +1694,7 @@ def _sum_n_rasters(
         sum_array[:] = 0.0
 
         # Assume everything is valid until proven otherwise
-        pixels_touched = numpy.zeros(sum_array.shape, dtype=numpy.bool)
+        pixels_touched = numpy.zeros(sum_array.shape, dtype=bool)
         for (_, band, nodata) in raster_tuple_list:
             if time.time() - last_log_time >= 5.0:
                 percent_complete = round(
@@ -1901,7 +1900,7 @@ def _reclassify_accumulation_transition(
         output_matrix[:] = NODATA_FLOAT32_MIN
 
         valid_pixels = numpy.ones(landuse_transition_from_matrix.shape,
-                                  dtype=numpy.bool)
+                                  dtype=bool)
         if from_nodata is not None:
             valid_pixels &= (landuse_transition_from_matrix != from_nodata)
 
@@ -1963,7 +1962,7 @@ def _reclassify_disturbance_magnitude(
         output_matrix[:] = NODATA_FLOAT32_MIN
 
         valid_pixels = numpy.ones(landuse_transition_from_matrix.shape,
-                                  dtype=numpy.bool)
+                                  dtype=bool)
         if from_nodata is not None:
             valid_pixels &= (landuse_transition_from_matrix != from_nodata)
 

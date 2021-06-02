@@ -43,6 +43,10 @@ GDAL_ERROR_LEVELS = {
 # leaves Projected CRS alone
 DEFAULT_OSR_AXIS_MAPPING_STRATEGY = osr.OAMS_TRADITIONAL_GIS_ORDER
 
+# standard values for common ARGS_SPEC name attributes
+LULC_ARG_NAME = 'land use/land cover'
+DEM_ARG_NAME = 'digital elevation model'
+AOI_ARG_NAME = 'area of interest'
 
 @contextlib.contextmanager
 def capture_gdal_logging():
@@ -346,10 +350,10 @@ def exponential_decay_kernel_raster(expected_distance, kernel_filepath):
             # matrices to float64 matrices.
             row_indices, col_indices = numpy.indices((row_block_width,
                                                       col_block_width),
-                                                     dtype=numpy.float)
+                                                     dtype=float)
 
-            row_indices += numpy.float(row_offset - max_distance)
-            col_indices += numpy.float(col_offset - max_distance)
+            row_indices += float(row_offset - max_distance)
+            col_indices += float(col_offset - max_distance)
 
             kernel_index_distances = numpy.hypot(
                 row_indices, col_indices)
@@ -773,11 +777,18 @@ def _assert_vectors_equal(
             actual_geom_wkt = actual_geom.ExportToWkt()
             expected_geom_shapely = loads(expected_geom_wkt)
             actual_geom_shapely = loads(actual_geom_wkt)
-            if not expected_geom_shapely.almost_equals(actual_geom_shapely):
-                raise AssertionError(
-                    "Vector geometry assertion fail. \n"
-                    f"Expected geometry: {expected_geom_wkt}. \n"
-                    f"Actual geometry: {actual_geom_wkt}. ")
+            # Try comparing geoms exactly equal allowing for different
+            # geometry ordering
+            geoms_equal = expected_geom_shapely.equals(actual_geom_shapely)
+            if not geoms_equal:
+                # Try almost_equal allowing for precision differences
+                geoms_almost_eq = expected_geom_shapely.almost_equals(
+                    actual_geom_shapely)
+                if not geoms_almost_eq:
+                    raise AssertionError(
+                        "Vector geometry assertion fail. \n"
+                        f"Expected geometry: {expected_geom_wkt}. \n"
+                        f"Actual geometry: {actual_geom_wkt}. ")
 
             expected_feature = None
             actual_feature = None

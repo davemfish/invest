@@ -36,7 +36,7 @@ ARGS_SPEC = {
                 "This is the landcover map that's used to map biophysical "
                 "properties about habitat and floral resources of landcover "
                 "types to a spatial layout."),
-            "name": "Land Cover Map"
+            "name": utils.LULC_ARG_NAME
         },
         "guild_table_path": {
             "validation_options": {
@@ -61,7 +61,7 @@ ARGS_SPEC = {
                 "indicating the relative abundance of the particular species "
                 "with respect to the sum of all relative abundance weights "
                 "in the table."),
-            "name": "Guild Table"
+            "name": "guild table"
         },
         "landcover_biophysical_table_path": {
             "validation_options": {
@@ -84,7 +84,7 @@ ARGS_SPEC = {
                 "<br/>* For every season matching _FORAGING_ACTIVITY_PATTERN "
                 "in the guilds table, a column matching the pattern in "
                 "`_LANDCOVER_FLORAL_RESOURCES_INDEX_HEADER`."),
-            "name": "Land Cover Biophysical Table"
+            "name": "biophysical table"
         },
         "farm_vector_path": {
             "validation_options": {
@@ -114,7 +114,7 @@ ARGS_SPEC = {
                 "in the biophysical and guild table.  Any areas that "
                 "overlap the landcover map will replace nesting substrate "
                 "suitability with this value.  Ranges from 0..1."),
-            "name": "Farm Vector"
+            "name": "farms"
         }
     }
 }
@@ -1247,7 +1247,7 @@ class _SumRasters(object):
 
     def __call__(self, *array_list):
         """Calculate sum of array_list and account for nodata."""
-        valid_mask = numpy.zeros(array_list[0].shape, dtype=numpy.bool)
+        valid_mask = numpy.zeros(array_list[0].shape, dtype=bool)
         result = numpy.empty_like(array_list[0])
         result[:] = 0
         for array in array_list:

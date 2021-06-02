@@ -36,7 +36,7 @@ ARGS_SPEC = {
             "about": (
                 "A GDAL-supported raster representing the land-cover of the"
                 "current scenario."),
-            "name": "Current Land Use/Land Cover"
+            "name": "current LULC"
         },
         "calc_sequestration": {
             "type": "boolean",
@@ -45,7 +45,7 @@ ARGS_SPEC = {
                 "Check to enable sequestration analysis. This requires "
                 "inputs of Land Use/Land Cover maps for both current and "
                 "future scenarios."),
-            "name": "Calculate Sequestration"
+            "name": "calculate sequestration"
         },
         "lulc_fut_path": {
             "type": "raster",
@@ -59,7 +59,7 @@ ARGS_SPEC = {
                 "enabled, this should be the reference, or baseline, future "
                 "scenario against which to compare the REDD policy "
                 "scenario."),
-            "name": "Future Landcover"
+            "name": "future LULC"
         },
         "do_redd": {
             "type": "boolean",
@@ -69,7 +69,7 @@ ARGS_SPEC = {
                 "three Land Use/Land Cover maps: one for the current "
                 "scenario, one for the future baseline scenario, and one for "
                 "the future REDD policy scenario."),
-            "name": "REDD Scenario Analysis"
+            "name": "REDD scenario analysis"
         },
         "lulc_redd_path": {
             "type": "raster",
@@ -81,7 +81,7 @@ ARGS_SPEC = {
                 "A GDAL-supported raster representing the land-cover of "
                 "the REDD policy future scenario.  This scenario will be "
                 "compared to the baseline future scenario."),
-            "name": "REDD Policy)"
+            "name": "REDD LULC"
         },
         "carbon_pools_path": {
             "validation_options": {
@@ -96,7 +96,7 @@ ARGS_SPEC = {
                 "'C_Below', 'C_Soil', 'C_Dead' as described in the User's "
                 "Guide.  The values in LULC must at least include the LULC "
                 "IDs in the land cover maps."),
-            "name": "Carbon Pools"
+            "name": "carbon pools"
         },
         "lulc_cur_year": {
             "validation_options": {
@@ -105,7 +105,7 @@ ARGS_SPEC = {
             "type": "number",
             "required": "calc_sequestration",
             "about": "The calendar year of the current scenario.",
-            "name": "Current Landcover Calendar Year"
+            "name": "current LULC year"
         },
         "lulc_fut_year": {
             "validation_options": {
@@ -114,7 +114,7 @@ ARGS_SPEC = {
             "type": "number",
             "required": "calc_sequestration",
             "about": "The calendar year of the future scenario.",
-            "name": "Future Landcover Calendar Year"
+            "name": "future LULC year"
         },
         "do_valuation": {
             "type": "boolean",
@@ -125,7 +125,7 @@ ARGS_SPEC = {
                 "with a future scenario is done and/or a REDD scenario "
                 "calculate NPV for either and report in final HTML "
                 "document."),
-            "name": "Run Valuation Model"
+            "name": "do valuation"
         },
         "price_per_metric_ton_of_c": {
             "type": "number",
@@ -138,8 +138,10 @@ ARGS_SPEC = {
         "discount_rate": {
             "type": "number",
             "required": "do_valuation",
-            "about": "The discount rate as a floating point percent.",
-            "name": "Market Discount in Price of Carbon (%)"
+            "about": (
+                "The discount rate in the price of carbon as a floating "
+                "point percent."),
+            "name": "market discount rate"
         },
         "rate_change": {
             "type": "number",
@@ -147,7 +149,7 @@ ARGS_SPEC = {
             "about": (
                 "The floating point percent increase of the price of "
                 "carbon per year."),
-            "name": "Annual Rate of Change in Price of Carbon (%)"
+            "name": "carbon price change"
         }
     }
 }
@@ -497,15 +499,21 @@ def _calculate_valuation_constant(
         a floating point number that can be used to multiply a delta carbon
         storage value by to calculate NPV.
     """
-    n_years = int(lulc_fut_year) - int(lulc_cur_year) - 1
+    n_years = lulc_fut_year - lulc_cur_year
     ratio = (
-        1.0 / ((1 + float(discount_rate) / 100.0) *
-               (1 + float(rate_change) / 100.0)))
-    valuation_constant = (
-        float(price_per_metric_ton_of_c) /
-        (float(lulc_fut_year) - float(lulc_cur_year)))
-    if ratio != 1.0:
-        valuation_constant *= (1.0 - ratio ** (n_years + 1)) / (1.0 - ratio)
+        1 / ((1 + discount_rate / 100) * 
+             (1 + rate_change / 100)))
+    valuation_constant = (price_per_metric_ton_of_c / n_years)
+    # note: the valuation formula in the user's guide uses sum notation.
+    # here it's been simplified to remove the sum using the general rule
+    # sum(r^k) from k=0 to N  ==  (r^(N+1) - 1) / (r - 1)
+    # where N = n_years-1 and r = ratio
+    if ratio == 1:
+        # if ratio == 1, we would divide by zero in the equation below
+        # so use the limit as ratio goes to 1, which is n_years
+        valuation_constant *= n_years
+    else:
+        valuation_constant *= (1 - ratio ** n_years) / (1 - ratio)
     return valuation_constant
 
 

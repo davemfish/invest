@@ -306,6 +306,9 @@ def check_raster(filepath, projected=False, projection_units=None):
 
     if gdal_dataset is None:
         return "File could not be opened as a GDAL raster"
+    # Check that an overview .ovr file wasn't opened.
+    if os.path.splitext(filepath)[1] == '.ovr':
+        return "File found to be an overview '.ovr' file."
 
     srs = osr.SpatialReference()
     srs.ImportFromWkt(gdal_dataset.GetProjection())
@@ -435,7 +438,9 @@ def check_option_string(value, options):
         otherwise.
 
     """
-    if value not in options:
+    # if options is an empty list, that means it's dynamically populated
+    # so no need to validate
+    if options and value not in options:
         return "Value must be one of: %s" % sorted(options)
 
 
