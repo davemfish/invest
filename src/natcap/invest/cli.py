@@ -657,7 +657,7 @@ def main(user_args=None):
 
     if args.subcommand == 'serve':
         import natcap.invest.ui_server
-        natcap.invest.ui_server.app.run(port=args.port, debug=True)
+        natcap.invest.ui_server.app.run(port=args.port)
         parser.exit(0)
 
     if args.subcommand == 'export-py':
