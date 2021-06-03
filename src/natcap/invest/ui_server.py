@@ -88,21 +88,15 @@ def get_invest_validate():
     Returns:
         A JSON string.
     """
-    LOGGER.debug('received validate request')
     payload = request.get_json()
-    LOGGER.debug(payload)
     target_module = payload['model_module']
     args_dict = json.loads(payload['args'])
-    LOGGER.debug(args_dict)
     try:
         limit_to = payload['limit_to']
     except KeyError:
         limit_to = None
-    LOGGER.debug('before module import')
     model_module = importlib.import_module(name=target_module)
-    LOGGER.debug('after module import')
     results = model_module.validate(args_dict, limit_to=limit_to)
-    LOGGER.debug(results)
     return json.dumps(results)
 
 
