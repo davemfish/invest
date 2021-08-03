@@ -16,8 +16,10 @@ import scipy
 import pygeoprocessing
 import taskgraph
 
-from . import validation
 from . import utils
+from . import spec_utils
+from .spec_utils import u
+from . import validation
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,103 +28,80 @@ ARGS_SPEC = {
     "module": __name__,
     "userguide_html": "scenario_gen_proximity.html",
     "args": {
-        "workspace_dir": validation.WORKSPACE_SPEC,
-        "results_suffix": validation.SUFFIX_SPEC,
-        "n_workers": validation.N_WORKERS_SPEC,
+        "workspace_dir": spec_utils.WORKSPACE,
+        "results_suffix": spec_utils.SUFFIX,
+        "n_workers": spec_utils.N_WORKERS,
         "base_lulc_path": {
-            "validation_options": {
-                "projected": True,
-            },
-            "type": "raster",
-            "required": True,
+            **spec_utils.LULC,
+            "projected": True,
             "about": "Path to the base landcover map",
-            "name": "base LULC"
+            "name": "Base Land Use/Cover"
         },
         "replacment_lucode": {
-            "type": "number",
-            "required": True,
+            "type": "integer",
             "about": "Code to replace when converting pixels",
-            "name": "replacement LULC code"
+            "name": "Replacement Landcover Code"
         },
         "area_to_convert": {
-            "validation_options": {
-                "expression": "value > 0",
-            },
+            "expression": "value > 0",
             "type": "number",
-            "required": True,
-            "about": "Max area (Ha) to convert",
-            "name": "max area to convert"
+            "units": u.hectare,
+            "about": "Max area to convert",
+            "name": "Max area to convert"
         },
         "focal_landcover_codes": {
-            "validation_options": {
-                "regexp": {
-                    "pattern": "[0-9 ]+",
-                },
-            },
             "type": "freestyle_string",
-            "required": True,
+            "regexp": "[0-9 ]+",
             "about": (
-                "A space separated string of landcover codes that are used "
-                "to determine the proximity when referring to 'towards' or "
+                "A space separated string of landcover codes that are used to "
+                "determine the proximity when referring to 'towards' or "
                 "'away' from the base landcover codes"),
-            "name": "focal LULC codes"
+            "name": "Focal Landcover Codes"
         },
         "convertible_landcover_codes": {
-            "validation_options": {
-                "regexp": {
-                    "pattern": "[0-9 ]+",
-                },
-            },
             "type": "freestyle_string",
-            "required": True,
+            "regexp": "[0-9 ]+",
             "about": (
                 "A space separated string of landcover codes that can be "
                 "converted in the generation phase found in "
                 "`args['base_lulc_path']`."),
-            "name": "convertible LULC codes"
+            "name": "Convertible Landcover Codes"
         },
         "n_fragmentation_steps": {
-            "validation_options": {
-                "expression": "value > 0",
-            },
+            "expression": "value > 0",
             "type": "number",
-            "required": True,
+            "units": u.count,
             "about": (
                 "This parameter is used to divide the conversion simulation "
-                "into equal subareas of the requested max area.  During each "
+                "into equal subareas of the requested max area. During each "
                 "sub-step the distance transform is recalculated from the "
-                "base landcover codes.  This can affect the final result "
-                "if the base types are also convertible types."),
-            "name": "number of conversion steps"
+                "base landcover codes.  This can affect the final result if "
+                "the base types are also convertible types."),
+            "name": "Number of Steps in Conversion"
         },
         "aoi_path": {
-            "type": "vector",
+            **spec_utils.AOI,
+            "projected": True,
             "required": False,
-            "validation_options": {
-                "projected": True,
-            },
             "about": (
                 "This is a set of polygons that will be used to aggregate "
                 "carbon values at the end of the run if provided."),
-            "name": utils.AOI_ARG_NAME
         },
         "convert_farthest_from_edge": {
             "type": "boolean",
-            "required": True,
             "about": (
                 "This scenario converts the convertible landcover codes "
                 "starting at the furthest pixel from the closest base "
                 "landcover codes and moves inward."),
-            "name": "convert farthest from edge"
+            "name": "Convert farthest from edge"
         },
         "convert_nearest_to_edge": {
             "type": "boolean",
-            "required": True,
             "about": (
                 "This scenario converts the convertible landcover codes "
                 "starting at the closest pixel in the base landcover codes "
                 "and moves outward."),
-            "name": "convert nearest to edge"
+            "name": "Convert nearest to edge"
         }
     }
 }
@@ -196,7 +175,8 @@ def execute(args):
     utils.make_directories(
         [output_dir, intermediate_output_dir, tmp_dir])
 
-    work_token_dir = os.path.join(intermediate_output_dir, '_taskgraph_working_dir')
+    work_token_dir = os.path.join(
+        intermediate_output_dir, '_taskgraph_working_dir')
     try:
         n_workers = int(args['n_workers'])
     except (KeyError, ValueError, TypeError):
@@ -642,9 +622,9 @@ def _sort_to_disk(dataset_path, score_weight=1.0):
 
         col_coords, row_coords = numpy.meshgrid(
             range(scores_data['xoff'], scores_data['xoff'] +
-                   scores_data['win_xsize']),
+                  scores_data['win_xsize']),
             range(scores_data['yoff'], scores_data['yoff'] +
-                   scores_data['win_ysize']))
+                  scores_data['win_ysize']))
 
         flat_indexes = (col_coords + row_coords * n_cols).flatten()
 
