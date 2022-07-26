@@ -996,7 +996,7 @@ def _raster_values_in_bounds(raster_path_band, lower_bound, upper_bound):
     raster_nodata = raster_info['nodata'][0]
 
     if raster_nodata is None:
-        LOGGER.warning(
+        LOGGER.debug(
             f"Raster has undefined NODATA value for {raster_path_band[0]}.")
         # If raster nodata is None then set to _OUT_NODATA to use for masking
         # where in this case nodata_mask will be all False.
