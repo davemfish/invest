@@ -1,7 +1,11 @@
 name: Run Tests and Build
 
-# on: [push, pull_request, workflow_call]
-on: [workflow_call]
+# on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '16 4 * * *'
 
 defaults:
   run:
@@ -314,7 +318,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [macos-latest, windows-latest]
         include:
           - os: macos-latest
             binary-make-command: mac_dmg
@@ -383,6 +387,10 @@ jobs:
 
       - name: Build binaries
         run: make ${{ matrix.binary-make-command }}
+
+      - name: invest-autotest
+        if: ${{ github.event_name == 'schedule' }}
+        run: make invest_autotest
 
   #     - name: Install Node.js
   #       uses: actions/setup-node@v2
