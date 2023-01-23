@@ -6,7 +6,7 @@ jobs:
   run-autotest:
     steps:
       - name: call build-and-test workflow
-      - uses: ./.github/workflows/build-and-test.yml
+        uses: ./.github/workflows/build-and-test.yml
 
       - name: invest-autotest
         run: make invest_autotest
