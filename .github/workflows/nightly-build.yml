@@ -1,0 +1,13 @@
+name: Nightly InVEST Builds
+
+on: [push]
+
+jobs:
+  call-workflow:
+    uses: ./.github/workflows/build-and-test.yml
+
+  run-autotest:
+    needs: call-workflow
+    run:
+      make invest_autotest
+

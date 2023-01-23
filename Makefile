@@ -112,6 +112,8 @@ TESTRUNNER := pytest -vs --import-mode=importlib --durations=0
 DATAVALIDATOR := $(PYTHON) scripts/invest-autovalidate.py $(GIT_SAMPLE_DATA_REPO_PATH)
 TEST_DATAVALIDATOR := $(PYTHON) -m pytest -vs scripts/invest-autovalidate.py
 
+INVEST_AUTOTESTER := $(PYTHON) scripts/invest-autotest.py --cwd $(GIT_SAMPLE_DATA_REPO_PATH)
+
 UG_FILE_VALIDATOR := $(PYTHON) scripts/userguide-filevalidator.py $(GIT_UG_REPO_PATH)
 
 # Target names.
@@ -180,6 +182,9 @@ test_ui: $(GIT_TEST_DATA_REPO_PATH)
 validate_sampledata: $(GIT_SAMPLE_DATA_REPO_PATH)
 	$(TEST_DATAVALIDATOR)
 	$(DATAVALIDATOR)
+
+invest_autotest: $(GIT_SAMPLE_DATA_REPO_PATH)
+	$(INVEST_AUTOTESTER)
 
 validate_userguide_filenames: $(GIT_UG_REPO_PATH)
 	$(UG_FILE_VALIDATOR)
