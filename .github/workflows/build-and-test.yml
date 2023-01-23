@@ -389,7 +389,7 @@ jobs:
         run: make ${{ matrix.binary-make-command }}
 
       - name: invest-autotest
-        if: ${{ github.event_name == 'schedule' }}
+        # if: ${{ github.event_name == 'schedule' }}
         run: make invest_autotest
 
   #     - name: Install Node.js

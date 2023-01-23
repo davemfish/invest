@@ -2,7 +2,7 @@ name: Nightly InVEST Builds
 
 on:
   schedule:
-    - cron: '30 4 * * *'
+    - cron: '*/15 * * * *'
 jobs:
   invest-autotest:
     runs-on: [ubuntu-latest]
