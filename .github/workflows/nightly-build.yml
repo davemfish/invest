@@ -9,9 +9,9 @@ jobs:
   invest-autotest:
     needs: build-and-test-workflow
     runs-on: ${{ matrix.os }}
-      strategy:
-        matrix:
-          os: [windows-latest]
+    strategy:
+      matrix:
+        os: [windows-latest]
     steps:
       - name: invest-autotest
         run: make invest_autotest
