@@ -112,8 +112,6 @@ TESTRUNNER := pytest -vs --import-mode=importlib --durations=0
 DATAVALIDATOR := $(PYTHON) scripts/invest-autovalidate.py $(GIT_SAMPLE_DATA_REPO_PATH)
 TEST_DATAVALIDATOR := $(PYTHON) -m pytest -vs scripts/invest-autovalidate.py
 
-INVEST_AUTOTESTER := $(PYTHON) scripts/invest-autotest.py --cwd $(GIT_SAMPLE_DATA_REPO_PATH)
-
 UG_FILE_VALIDATOR := $(PYTHON) scripts/userguide-filevalidator.py $(GIT_UG_REPO_PATH)
 
 # Target names.
@@ -134,6 +132,7 @@ MAC_APPLICATION_BUNDLE_NAME := InVEST.app
 MAC_APPLICATION_BUNDLE_DIR := $(BUILD_DIR)/mac_app_$(VERSION)
 MAC_APPLICATION_BUNDLE := $(MAC_APPLICATION_BUNDLE_DIR)/$(MAC_APPLICATION_BUNDLE_NAME)
 
+INVEST_AUTOTESTER := $(PYTHON) scripts/invest-autotest.py --cwd $(GIT_SAMPLE_DATA_REPO_PATH) --binary $(INVEST_BINARIES_DIR)/invest
 
 .PHONY: fetch install binaries apidocs userguide windows_installer mac_dmg sampledata sampledata_single test test_ui clean help check python_packages jenkins purge mac_zipfile deploy codesign_mac codesign_windows $(GIT_SAMPLE_DATA_REPO_PATH) $(GIT_TEST_DATA_REPO_PATH) $(GIT_UG_REPO_REV)
 
@@ -183,7 +182,7 @@ validate_sampledata: $(GIT_SAMPLE_DATA_REPO_PATH)
 	$(TEST_DATAVALIDATOR)
 	$(DATAVALIDATOR)
 
-invest_autotest: $(GIT_SAMPLE_DATA_REPO_PATH)
+invest_autotest: $(GIT_SAMPLE_DATA_REPO_PATH) $(INVEST_BINARIES_DIR)
 	$(INVEST_AUTOTESTER)
 
 validate_userguide_filenames: $(GIT_UG_REPO_PATH)
