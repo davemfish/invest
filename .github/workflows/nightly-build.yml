@@ -3,7 +3,12 @@ name: Nightly InVEST Builds
 on: [push]
 
 jobs:
-  run-autotest:
+  nightly-build:
+    name: Nightly Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
     steps:
       - name: call build-and-test workflow
         uses: ./.github/workflows/build-and-test.yml
