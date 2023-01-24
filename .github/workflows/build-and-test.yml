@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run invest-autotest
-        if : contains('refs/heads/main refs/heads/task/755-headless-autotest', github.ref)
+        if : contains('refs/heads/task/*', github.ref)
         # if: github.event_name == 'push' && contains('
         #   refs/heads/main refs/heads/release/*', github.ref)
         run: make invest_autotest
