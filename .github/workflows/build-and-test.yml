@@ -36,8 +36,6 @@ jobs:
         if : |
           github.event_name == 'push' &&
           (contains(github.ref, 'task') || github.ref == 'refs/heads/main')
-          # if: github.event_name == 'push' && contains('
-          #   refs/heads/main refs/heads/release/*', github.ref)
         run: make invest_autotest
 
       - uses: actions/checkout@v3
