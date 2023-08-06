@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import glob from 'glob';
-import { spawn, spawnSync } from 'child_process';
+import { execSync, spawn, spawnSync } from 'child_process';
 
 import rimraf from 'rimraf';
 import puppeteer from 'puppeteer-core';
@@ -133,13 +133,28 @@ beforeEach(() => {
 
 afterEach(async () => {
   try {
-    await BROWSER.close();
+    console.log(ELECTRON_PROCESS.pid)
+    const pages = await BROWSER.pages();
+    await Promise.all(pages.map(page => page.close()));
+    await BROWSER.close(); // this kills ELECTRON_PROCESS, but not the invest child
+    // await new Promise(r => setTimeout(r, 5000)); // does nothing
+    // console.log(ELECTRON_PROCESS.signalCode);
+    // if (process.platform !== 'win32') {
+    //   ELECTRON_PROCESS.kill();
+    // } else {
+    //   console.log('finally before kill')
+    //   const { pid } = ELECTRON_PROCESS;
+    //   execSync(`taskkill /pid ${pid} /t /f`)
+    //   console.log('finally after kill')
+    // }
   } catch (error) {
     console.log(BINARY_PATH);
     console.error(error);
+  } finally {
+    // await new Promise(r => setTimeout(r, 10000)); // waiting here is not the answer
+    // ELECTRON_PROCESS.removeAllListeners();
+    // ELECTRON_PROCESS.kill();
   }
-  ELECTRON_PROCESS.removeAllListeners();
-  ELECTRON_PROCESS.kill();
 });
 
 test('Run a real invest model', async () => {

@@ -1,4 +1,4 @@
-import { spawn, exec } from 'child_process';
+import { spawn, exec, execSync } from 'child_process';
 
 import fetch from 'node-fetch';
 
@@ -84,30 +84,35 @@ export async function getFlaskIsReady({ i = 0, retries = 41 } = {}) {
 export async function shutdownPythonProcess(subprocess) {
   // builtin kill() method on a nodejs ChildProcess doesn't work on windows.
   try {
+    logger.debug(`killing: ${subprocess.pid}`)
+    const { pid } = subprocess;
     if (process.platform !== 'win32') {
-      subprocess.kill();
+      subprocess.kill(); // does this kill the tree?
+      // process.kill(-pid); // if not, this should?
     } else {
-      const { pid } = subprocess;
-      exec(`taskkill /pid ${pid} /t /f`);
+      execSync(`taskkill /pid ${pid} /t /f`); // this works well w/o the extra polling below
+      // process.kill(-pid) // leaves cmd window open
     }
   } catch (error) {
     // if the process was already killed by some other means
     logger.debug(error);
+  } finally {
+    Promise.resolve();
   }
 
-  // If we return too quickly, it seems the electron app is allowed
-  // to quit before the subprocess is killed, and the subprocess remains
-  // open. Here we poll a flask endpoint and resolve only when it
-  // gives ECONNREFUSED.
-  return fetch(`${HOSTNAME}:${process.env.PORT}/ready`, {
-    method: 'get',
-  })
-    .then(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      return shutdownPythonProcess(subprocess);
-    })
-    .catch(() => {
-      logger.debug('flask server is closed');
-      return Promise.resolve();
-    });
+  // // If we return too quickly, it seems the electron app is allowed
+  // // to quit before the subprocess is killed, and the subprocess remains
+  // // open. Here we poll a flask endpoint and resolve only when it
+  // // gives ECONNREFUSED.
+  // return fetch(`${HOSTNAME}:${process.env.PORT}/ready`, {
+  //   method: 'get',
+  // })
+  //   .then(async () => {
+  //     await new Promise((resolve) => setTimeout(resolve, 300));
+  //     return shutdownPythonProcess(subprocess);
+  //   })
+  //   .catch(() => {
+  //     logger.debug('flask server is closed');
+  //     return Promise.resolve();
+  //   });
 }

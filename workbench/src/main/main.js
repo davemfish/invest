@@ -42,6 +42,9 @@ import i18n from './i18n/i18n';
 
 const logger = getLogger(__filename.split('/').slice(-1)[0]);
 
+logger.debug(process.pid)
+logger.debug(process.ppid)
+// logger.debug(process)
 process.on('uncaughtException', (err) => {
   logger.error(err);
   process.exit(1);
@@ -51,6 +54,17 @@ process.on('unhandledRejection', (err, promise) => {
   logger.error(err);
   process.exit(1);
 });
+process.on('exit', () => {
+  logger.debug('caught exit'); // not catching on windows
+  process.exit(0);
+});
+process.on('beforeExit', () => {
+  logger.debug('caught before exit')
+  process.exit(0)
+});
+process.on('disconnect', () => {
+  logger.debug('caught disconnect')
+})
 
 if (!process.env.PORT) {
   process.env.PORT = '56789';
@@ -187,6 +201,7 @@ export function main() {
     }
   });
   app.on('window-all-closed', async () => {
+    logger.debug('all windows closed')
     // On OS X it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
@@ -195,6 +210,7 @@ export function main() {
   });
   let shuttingDown = false;
   app.on('before-quit', async (event) => {
+    logger.debug('before quit')
     // prevent quitting until after we're done with cleanup,
     // then programatically quit
     if (shuttingDown) { return; }
