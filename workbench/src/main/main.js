@@ -40,7 +40,6 @@ import i18n from './i18n/i18n';
 import pkg from '../../package.json';
 
 const logger = getLogger(__filename.split('/').slice(-1)[0]);
-
 process.on('uncaughtException', (err) => {
   logger.error(err);
   process.exit(1);
@@ -54,7 +53,6 @@ process.on('unhandledRejection', (err, promise) => {
 if (!process.env.PORT) {
   process.env.PORT = '56789';
 }
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
@@ -205,6 +203,6 @@ export function main() {
   });
 }
 
-if (typeof require !== 'undefined' && require.main === module) {
+if (process.versions.hasOwnProperty('electron')) {
   main(process.argv);
 }
