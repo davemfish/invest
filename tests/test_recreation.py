@@ -823,37 +823,6 @@ class RecreationRegressionTests(unittest.TestCase):
         for key in expected_results:
             numpy.testing.assert_allclose(results[key], expected_results[key])
 
-    @unittest.skip("skipping to avoid remote server call (issue #3753)")
-    def test_base_execute(self):
-        """Recreation base regression test on fast sample data.
-
-        Executes Recreation model with default data and default arguments.
-        """
-        from natcap.invest.recreation import recmodel_client
-
-        args = {
-            'aoi_path': os.path.join(SAMPLE_DATA, 'andros_aoi.shp'),
-            'cell_size': 40000.0,
-            'compute_regression': True,
-            'start_year': '2005',
-            'end_year': '2014',
-            'grid_aoi': True,
-            'grid_type': 'hexagon',
-            'predictor_table_path': os.path.join(
-                SAMPLE_DATA, 'predictors.csv'),
-            'results_suffix': '',
-            'scenario_predictor_table_path': os.path.join(
-                SAMPLE_DATA, 'predictors_scenario.csv'),
-            'workspace_dir': self.workspace_dir,
-        }
-
-        recmodel_client.execute(args)
-        _assert_regression_results_eq(
-            args['workspace_dir'],
-            os.path.join(REGRESSION_DATA, 'file_list_base.txt'),
-            os.path.join(args['workspace_dir'], 'scenario_results.shp'),
-            os.path.join(REGRESSION_DATA, 'scenario_results_40000.csv'))
-
     def test_square_grid(self):
         """Recreation square grid regression test."""
         from natcap.invest.recreation import recmodel_client
