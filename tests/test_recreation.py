@@ -787,13 +787,15 @@ class RecreationRegressionTests(unittest.TestCase):
 
         coefficient_vector_path = os.path.join(
             REGRESSION_DATA, 'predictor_data.shp')
+        predictor_name_list = ['bonefish', 'airdist', 'ports', 'bathy']
         response_vector_path = os.path.join(
             REGRESSION_DATA, 'predictor_data_pud.shp')
         response_id = 'PUD_YR_AVG'
 
         _, coefficients, ssres, r_sq, r_sq_adj, std_err, dof, se_est = (
             recmodel_client._build_regression(
-                response_vector_path, coefficient_vector_path, response_id))
+                response_vector_path, coefficient_vector_path,
+                predictor_name_list, response_id))
 
         results = {}
         results['coefficients'] = coefficients

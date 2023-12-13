@@ -517,7 +517,7 @@ def execute(args):
             task_name='prepare response polygons for geoprocessing')
 
         # Build predictor data
-        build_predictor_data_task = _schedule_predictor_data_processing(
+        build_predictor_data_task, predictor_list = _schedule_predictor_data_processing(
             file_registry['local_aoi_path'],
             file_registry['response_polygons_lookup'],
             prepare_response_polygons_task,
@@ -532,6 +532,7 @@ def execute(args):
             func=_compute_and_summarize_regression,
             args=(file_registry['pud_results_path'],
                   file_registry['predictor_vector_path'],
+                  predictor_list,
                   file_registry['server_version'],
                   coefficient_json_path,
                   file_registry['regression_coefficients']),
@@ -544,7 +545,7 @@ def execute(args):
         if ('scenario_predictor_table_path' in args and
                 args['scenario_predictor_table_path'] != ''):
             utils.make_directories([scenario_dir])
-            build_scenario_data_task = _schedule_predictor_data_processing(
+            build_scenario_data_task, _ = _schedule_predictor_data_processing(
                 file_registry['local_aoi_path'],
                 file_registry['response_polygons_lookup'],
                 prepare_response_polygons_task,
@@ -846,16 +847,21 @@ def _schedule_predictor_data_processing(
         predictor_table_path, **MODEL_SPEC['args']['predictor_table_path'])
     predictor_task_list = []
     predictor_json_list = []  # tracks predictor files to add to shp
+    predictor_id_list = []  # tracks predictor names to include in regression
 
     for predictor_id, row in predictor_df.iterrows():
         LOGGER.info(f"Building predictor {predictor_id}")
+        predictor_id_list.append(predictor_id)
+        predictor_target_path = os.path.join(
+            working_dir, predictor_id + '.json')
+        predictor_json_list.append(predictor_target_path)
         predictor_type = row['type']
         if predictor_type.startswith('raster'):
             # type must be one of raster_sum or raster_mean
             raster_op_mode = predictor_type.split('_')[1]
-            predictor_target_path = os.path.join(
-                working_dir, predictor_id + '.json')
-            predictor_json_list.append(predictor_target_path)
+            # predictor_target_path = os.path.join(
+            #     working_dir, predictor_id + '.json')
+            # predictor_json_list.append(predictor_target_path)
             predictor_task_list.append(task_graph.add_task(
                 func=_raster_sum_mean,
                 args=(row['path'], raster_op_mode,
@@ -865,9 +871,9 @@ def _schedule_predictor_data_processing(
         # polygon types are a special case because the polygon_area
         # function requires an additional 'mode' argument.
         elif predictor_type.startswith('polygon'):
-            predictor_target_path = os.path.join(
-                working_dir, predictor_id + '.json')
-            predictor_json_list.append(predictor_target_path)
+            # predictor_target_path = os.path.join(
+            #     working_dir, predictor_id + '.json')
+            # predictor_json_list.append(predictor_target_path)
             predictor_task_list.append(task_graph.add_task(
                 func=_polygon_area,
                 args=(predictor_type, response_polygons_pickle_path,
@@ -876,9 +882,9 @@ def _schedule_predictor_data_processing(
                 dependent_task_list=[prepare_response_polygons_task],
                 task_name=f'predictor {predictor_id}'))
         else:
-            predictor_target_path = os.path.join(
-                working_dir, predictor_id + '.json')
-            predictor_json_list.append(predictor_target_path)
+            # predictor_target_path = os.path.join(
+            #     working_dir, predictor_id + '.json')
+            # predictor_json_list.append(predictor_target_path)
             predictor_task_list.append(task_graph.add_task(
                 func=predictor_functions[predictor_type],
                 args=(response_polygons_pickle_path,
@@ -895,7 +901,7 @@ def _schedule_predictor_data_processing(
         dependent_task_list=predictor_task_list,
         task_name='assemble predictor data')
 
-    return assemble_predictor_data_task
+    return assemble_predictor_data_task, predictor_id_list
 
 
 def _prepare_response_polygons_lookup(
@@ -944,7 +950,7 @@ def _json_to_shp_table(
     response_vector = None
 
     layer = predictor_vector.GetLayer()
-    layer_defn = layer.GetLayerDefn()
+    # layer_defn = layer.GetLayerDefn()
 
     predictor_id_list = []
     for json_filename in predictor_json_list:
@@ -970,16 +976,16 @@ def _json_to_shp_table(
 
     # Get all the fieldnames. If they are not in the predictor_id_list,
     # get their index and delete
-    n_fields = layer_defn.GetFieldCount()
-    fieldnames = []
-    for idx in range(n_fields):
-        field_defn = layer_defn.GetFieldDefn(idx)
-        fieldnames.append(field_defn.GetName())
-    for field_name in fieldnames:
-        if field_name not in predictor_id_list:
-            idx = layer.FindFieldIndex(field_name, 1)
-            layer.DeleteField(idx)
-    layer_defn = None
+    # n_fields = layer_defn.GetFieldCount()
+    # fieldnames = []
+    # for idx in range(n_fields):
+    #     field_defn = layer_defn.GetFieldDefn(idx)
+    #     fieldnames.append(field_defn.GetName())
+    # for field_name in fieldnames:
+    #     if field_name not in predictor_id_list:
+    #         idx = layer.FindFieldIndex(field_name, 1)
+    #         layer.DeleteField(idx)
+    # layer_defn = None
     layer = None
     predictor_vector.FlushCache()
     predictor_vector = None
@@ -1262,8 +1268,9 @@ def _ogr_to_geometry_list(vector_path):
 
 
 def _compute_and_summarize_regression(
-        response_vector_path, predictor_vector_path, server_version_path,
-        target_coefficient_json_path, target_regression_summary_path):
+        response_vector_path, predictor_vector_path, predictor_name_list,
+        server_version_path, target_coefficient_json_path,
+        target_regression_summary_path):
     """Compute a regression and summary statistics and generate a report.
 
     Args:
@@ -1284,23 +1291,25 @@ def _compute_and_summarize_regression(
         None
 
     """
-    predictor_id_list, coefficients, ssres, r_sq, r_sq_adj, std_err, dof, se_est = (
+    # coefficient IDs are predictor names, plus 'Intercept'
+    coefficient_id_list, coefficients, ssres, r_sq, r_sq_adj, std_err, dof, se_est = (
         _build_regression(
-            response_vector_path, predictor_vector_path, RESPONSE_ID))
+            response_vector_path, predictor_vector_path, predictor_name_list,
+            RESPONSE_ID))
 
     # Generate a nice looking regression result and write to log and file
     coefficients_string = '               estimate     stderr    t value\n'
     # The last coefficient is the y-intercept,
     # but we want it at the top of the report, thus [-1] on lists
     coefficients_string += (
-        f'{predictor_id_list[-1]:12} {coefficients[-1]:+.3e} '
+        f'{coefficient_id_list[-1]:12} {coefficients[-1]:+.3e} '
         f'{se_est[-1]:+.3e} {coefficients[-1] / se_est[-1]:+.3e}\n')
     # Since the intercept has already been reported, [:-1] on all the lists
     coefficients_string += '\n'.join(
-        f'{p_id:12} {coefficient:+.3e} {se_est_factor:+.3e} '
+        f'{c_id:12} {coefficient:+.3e} {se_est_factor:+.3e} '
         f'{coefficient / se_est_factor:+.3e}'
-        for p_id, coefficient, se_est_factor in zip(
-            predictor_id_list[:-1], coefficients[:-1], se_est[:-1]))
+        for c_id, coefficient, se_est_factor in zip(
+            coefficient_id_list[:-1], coefficients[:-1], se_est[:-1]))
 
     # Include the server version and PUD hash in the report:
     with open(server_version_path, 'rb') as f:
@@ -1321,13 +1330,13 @@ def _compute_and_summarize_regression(
         regression_log.write(report_string + '\n')
 
     # Predictor coefficients are needed for _calculate_scenario()
-    predictor_estimates = dict(zip(predictor_id_list, coefficients))
+    predictor_estimates = dict(zip(coefficient_id_list, coefficients))
     with open(target_coefficient_json_path, 'w') as json_file:
         json.dump(predictor_estimates, json_file)
 
 
 def _build_regression(
-        response_vector_path, predictor_vector_path,
+        response_vector_path, predictor_vector_path, predictor_names,
         response_id):
     """Multiple least-squares regression with log-transformed response.
 
@@ -1386,13 +1395,14 @@ def _build_regression(
     intercept_array = numpy.ones_like(response_array)
 
     # Predictor data matrix
-    n_predictors = predictor_layer_defn.GetFieldCount()
+    # n_predictors = predictor_layer_defn.GetFieldCount()
+    n_predictors = len(predictor_names)
     predictor_matrix = numpy.empty((n_features, n_predictors))
-    predictor_names = []
-    for idx in range(n_predictors):
-        field_defn = predictor_layer_defn.GetFieldDefn(idx)
-        field_name = field_defn.GetName()
-        predictor_names.append(field_name)
+    # predictor_names = []
+    # for idx in range(n_predictors):
+        # field_defn = predictor_layer_defn.GetFieldDefn(idx)
+        # field_name = field_defn.GetName()
+        # predictor_names.append(field_name)
     for row_index, feature in enumerate(predictor_layer):
         predictor_matrix[row_index, :] = numpy.array(
             [feature.GetField(str(key)) for key in predictor_names])
