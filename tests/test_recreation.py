@@ -724,7 +724,7 @@ class RecreationRegressionTests(unittest.TestCase):
         with open(target_path, 'r') as file:
             predictor_results = json.load(file)
         # Assert that target file was written and it is an empty dictionary
-        assert(len(predictor_results) == 0)
+        self.assertEqual(len(predictor_results), 0)
 
     def test_overlapping_features_in_polygon_predictor(self):
         """Recreation test overlapping predictor features not double-counted.
