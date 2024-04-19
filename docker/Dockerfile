@@ -12,6 +12,7 @@ RUN cd / && \
         python3 -m build
 
 ARG PYTHON_VERSION=$(python3 -c "import sys; print('.'.join([str(sys.version_info.major), str(sys.version_info.minor)]))")
+RUN echo ${PYTHON_VERSION}
 
 # Create the container for distribution that has runtime dependencies.
 FROM mambaorg/micromamba:1.5.0-bookworm-slim
@@ -21,10 +22,12 @@ COPY --from=build /invest/dist/*.whl /tmp/
 COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/environment.yml
 
 RUN micromamba create -n env-invest python==${PYTHON_VERSION} -c conda-forge && \
-        micromamba install -y -n env-invest -c conda-forge -f /tmp/environment.yml && \
+        micromamba activate env-invest && \
+        micromamba install -y -c conda-forge -f /tmp/environment.yml && \
         micromamba clean --all --yes && \
-        /opt/conda/bin/python -m pip install /tmp/*.whl && \
-        /opt/conda/bin/python -m pip cache purge && \
+        python -m pip install /tmp/*.whl && \
+        python -m pip cache purge && \
+        micromamba deactivate && \
         micromamba remove -y -n base cxx-compiler git
 
 ENTRYPOINT ["/usr/local/bin/_entrypoint.sh"]
