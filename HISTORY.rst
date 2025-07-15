@@ -61,8 +61,12 @@
   7. InVEST model Z (model names should be sorted A-Z)
 
 
-Unreleased Changes
-------------------
+..
+  Unreleased Changes
+  ------------------
+
+3.16.1 (2025-07-01)
+-------------------
 
 General
 =======
@@ -91,6 +95,11 @@ Plugins
   (`#2025 <https://github.com/natcap/invest/issues/2025>`_).
 * Plugin environments are now created using the conda-forge channel only.
   The default channel is excluded (`#1802 <https://github.com/natcap/invest/issues/1802>`_).
+
+NDR
+===
+* Fixed a bug where model outputs in D8 mode had some nodata holes resulting
+  from an incorrect nodata check (`#2055 <https://github.com/natcap/invest/issues/2055>`_).
 
 Pollination
 ===========
