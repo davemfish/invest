@@ -31,6 +31,7 @@ MODEL_SPEC = spec.build_model_spec({
     "model_id": "sdr",
     "model_title": gettext("Sediment Delivery Ratio"),
     "userguide": "sdr.html",
+    # "notebook": "https://github.com/davemfish/invest-notebooks/blob/main/sdr_explore_nb.py",
     "aliases": (),
     "ui_spec": {
         "order": [

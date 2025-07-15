@@ -49,6 +49,7 @@ class InvestTab extends React.Component {
     this.investLogfileCallback = this.investLogfileCallback.bind(this);
     this.investExitCallback = this.investExitCallback.bind(this);
     this.handleOpenWorkspace = this.handleOpenWorkspace.bind(this);
+    this.handleViewResults = this.handleViewResults.bind(this);
     this.showErrorModal = this.showErrorModal.bind(this);
   }
 
@@ -196,6 +197,13 @@ class InvestTab extends React.Component {
     }
   }
 
+  async handleViewResults(logfile, modelID) {
+    const notebookURL = await ipcRenderer.invoke(
+      ipcMainChannels.GET_SETTING, `models.${modelID}.notebook`);
+    console.log('View Results');
+    ipcRenderer.send(ipcMainChannels.OPEN_NOTEBOOK, notebookURL, logfile);
+  }
+
   showErrorModal(shouldShow) {
     this.setState({
       showErrorModal: shouldShow,
@@ -290,6 +298,7 @@ class InvestTab extends React.Component {
                       <ModelStatusAlert
                         status={status}
                         handleOpenWorkspace={() => this.handleOpenWorkspace(argsValues?.workspace_dir)}
+                        handleViewResults={() => this.handleViewResults(logfile, modelID)}
                         terminateInvestProcess={this.terminateInvestProcess}
                       />
                     )
