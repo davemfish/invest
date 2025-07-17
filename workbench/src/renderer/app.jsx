@@ -133,10 +133,17 @@ export default function App(props) {
    * @param {string} tabID - the unique identifier of an open tab
    * @param {obj} jobObj - key-value pairs of any job properties to be updated
    */
-  function updateJobProperties(tabID, jobObj) {
+  async function updateJobProperties(tabID, jobObj, save = false) {
     const newOpenJobs = new Map(openJobs);
-    newOpenJobs.set(tabID, { ...openJobs.get(tabID), ...jobObj });
+    const updatedJob = { ...openJobs.get(tabID), ...jobObj }
+    newOpenJobs.set(tabID, updatedJob);
     setOpenJobs(newOpenJobs);
+    console.log(save)
+    if (save) {
+      console.log(updatedJob)
+      await InvestJob.saveJob(updatedJob);
+      updateRecentJobs();
+    }
   }
 
   /**
@@ -145,6 +152,7 @@ export default function App(props) {
    */
   async function saveJob(tabID) {
     const job = openJobs.get(tabID);
+    console.log(job)
     await InvestJob.saveJob(job);
     updateRecentJobs();
   }

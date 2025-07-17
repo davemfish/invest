@@ -18,6 +18,7 @@ import { withTranslation } from 'react-i18next';
 import ModelStatusAlert from './ModelStatusAlert';
 import SetupTab from '../SetupTab';
 import LogTab from '../LogTab';
+import ResultsTab from '../ResultsTab';
 import ResourcesLinks from '../ResourcesLinks';
 import { getSpec } from '../../server_requests';
 import { ipcMainChannels } from '../../../main/ipcMainChannels';
@@ -113,16 +114,17 @@ class InvestTab extends React.Component {
     const {
       tabID,
       updateJobProperties,
-      saveJob,
+      // saveJob,
     } = this.props;
     let status = (data.code === 0) ? 'success' : 'error';
     if (this.state.userTerminated) {
       status = 'canceled';
     }
+    const saveJob = true;
     updateJobProperties(tabID, {
       status: status,
-    });
-    saveJob(tabID);
+    }, saveJob);
+    // saveJob(tabID);
     this.setState({
       executeClicked: false,
       userTerminated: false,
@@ -268,6 +270,10 @@ class InvestTab extends React.Component {
                   {t('Log')}
                   <MdKeyboardArrowRight />
                 </Nav.Link>
+                <Nav.Link eventKey="results" disabled={status !== 'success'}>
+                  {t('Results')}
+                  <MdKeyboardArrowRight />
+                </Nav.Link>
               </Nav>
               <div
                 className="sidebar-row sidebar-buttons"
@@ -328,6 +334,16 @@ class InvestTab extends React.Component {
                     logfile={logfile}
                     executeClicked={executeClicked}
                     tabID={tabID}
+                  />
+                </TabPane>
+                <TabPane
+                  eventKey="results"
+                  aria-label="model results tab"
+                >
+                  <ResultsTab
+                    htmlFile={`${argsValues.workspace_dir}/report${argsValues.results_suffix}.html`}
+                    tabID={tabID}
+                    status={status}
                   />
                 </TabPane>
               </TabContent>

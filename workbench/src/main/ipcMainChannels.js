@@ -12,6 +12,7 @@ export const ipcMainChannels = {
   GET_LANGUAGE: 'get-language',
   HAS_MSVC: 'has-msvc',
   INVEST_KILL: 'invest-kill',
+  INVEST_READ_HTML: 'invest-read-html',
   INVEST_READ_LOG: 'invest-read-log',
   INVEST_RUN: 'invest-run',
   INVEST_VERSION: 'invest-version',

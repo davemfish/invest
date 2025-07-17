@@ -41,6 +41,35 @@ export function setupLaunchPluginServerHandler() {
   );
 }
 
+function generateReport(script, investLogfile, workspace, suffix) {
+    const cmd = 'marimo'
+    const cmdArgs = [
+      'export', 'html', script,
+      '--no-include-code',
+      '-o', path.join(workspace, `report${suffix}.html`),
+      '--', '-logfile', investLogfile
+    ]
+
+    // without shell, IOError when datastack.py loads json
+    const spawnOptions = { shell: true };
+    if (process.platform !== 'win32') {
+      // counter-intuitive, but w/ true: invest terminates when this shell terminates
+      spawnOptions.detached = true;
+    }
+    const marimo = spawn(cmd, cmdArgs, spawnOptions);
+    const stdOutCallback = (data) => {
+      logger.debug(`${data}`);
+    };
+    marimo.stdout.on('data', stdOutCallback);
+    marimo.stderr.on('data', stdOutCallback);
+    return marimo;
+    // marimo.on('exit', () => {
+    //   event.reply(`invest-exit-${tabID}`, {
+    //     code: code,
+    //   });
+    // })
+}
+
 export function setupInvestRunHandlers() {
   const runningJobs = {};
 
@@ -59,6 +88,7 @@ export function setupInvestRunHandlers() {
   ipcMain.on(ipcMainChannels.INVEST_RUN, async (
     event, modelID, args, tabID
   ) => {
+    let investLogfile;
     let investStarted = false;
     const investStdErr = '';
     const usageLogger = investUsageLogger();
@@ -137,7 +167,7 @@ export function setupInvestRunHandlers() {
         if (strData.match('Writing log messages to')) {
           investStarted = true;
           runningJobs[tabID] = investRun.pid;
-          const investLogfile = strData.substring(
+          investLogfile = strData.substring(
             strData.indexOf('[') + 1, strData.indexOf(']')
           );
           event.reply(`invest-logging-${tabID}`, path.resolve(investLogfile));
@@ -179,6 +209,16 @@ export function setupInvestRunHandlers() {
       if (!ELECTRON_DEV_MODE && !process.env.PUPPETEER) {
         usageLogger.exit(investStdErr, port);
       }
+      if (code === 0) {
+        const script = settingsStore.get(`models.${modelID}.script`);
+        const marimoProc = generateReport(script, investLogfile, args.workspace_dir, args.results_suffix);
+        marimoProc.on('exit', (_code, _signal) => {
+          logger.debug(`Marimo process exited with code ${_code} and signal ${_signal}`);
+          event.reply(`invest-html-${tabID}`, {
+            code: _code,
+          });
+        });
+      }
     });
   });
 }
@@ -198,6 +238,21 @@ export function setupInvestLogReaderHandler() {
 
       fileStream.on('data', (data) => {
         event.reply(`invest-stdout-${channel}`, [`${data}`, '']);
+      });
+    }
+  );
+}
+
+export function setupInvestHtmlReaderHandler() {
+  ipcMain.handle(
+    ipcMainChannels.INVEST_READ_HTML,
+    (event, file, channel) => {
+      fs.readFile(file, 'utf8', (err, data) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        return data;
       });
     }
   );
