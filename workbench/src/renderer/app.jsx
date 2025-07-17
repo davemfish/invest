@@ -132,29 +132,18 @@ export default function App(props) {
    * Update properties of an open InvestTab.
    * @param {string} tabID - the unique identifier of an open tab
    * @param {obj} jobObj - key-value pairs of any job properties to be updated
+   * @param {boolean} save - if true, save the updated job to persistent store
    */
   async function updateJobProperties(tabID, jobObj, save = false) {
     const newOpenJobs = new Map(openJobs);
     const updatedJob = { ...openJobs.get(tabID), ...jobObj }
     newOpenJobs.set(tabID, updatedJob);
     setOpenJobs(newOpenJobs);
-    console.log(save)
     if (save) {
       console.log(updatedJob)
       await InvestJob.saveJob(updatedJob);
       updateRecentJobs();
     }
-  }
-
-  /**
-   * Save data describing an invest job to a persistent store.
-   * @param {string} tabID - the unique identifier of an open InvestTab.
-   */
-  async function saveJob(tabID) {
-    const job = openJobs.get(tabID);
-    console.log(job)
-    await InvestJob.saveJob(job);
-    updateRecentJobs();
   }
 
   /**
@@ -286,7 +275,6 @@ export default function App(props) {
         <InvestTab
           job={job}
           tabID={id}
-          saveJob={saveJob}
           updateJobProperties={updateJobProperties}
           investList={investList}
         />
