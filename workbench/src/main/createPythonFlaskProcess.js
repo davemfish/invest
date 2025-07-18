@@ -1,6 +1,8 @@
 import { spawn, execSync } from 'child_process';
 import http from 'http';
 import fetch from 'node-fetch';
+import upath from 'upath';
+import { app } from 'electron';
 
 import { getLogger } from './logger';
 import { settingsStore } from './settingsStore';
@@ -141,6 +143,36 @@ export async function createPluginServerProcess(modelID, _port = undefined) {
   await getFlaskIsReady(port, 0, 500);
   logger.info('flask is ready');
   return pythonServerProcess.pid;
+}
+
+export async function createMarimoProcess(notebookPath, _port = undefined) {
+  let port = _port;
+  if (port === undefined) {
+    port = await getFreePort();
+  }
+
+  const micromamba = settingsStore.get('micromamba');
+  const rootPrefix = upath.join(app.getPath('userData'), 'micromamba_envs');
+  const baseEnvPrefix = upath.join(rootPrefix, 'notebook_base');
+  const args = [
+    'run', '--prefix', `"${baseEnvPrefix}"`,
+    'marimo', 'edit', '--headless', '--no-token',
+    '--port', port, notebookPath];
+  // shell mode is necessary in dev mode & relying on a conda env
+  const pythonProcess = spawn(micromamba, args, { shell: true });
+  // settingsStore.set(`plugins.${modelID}.port`, port);
+  // settingsStore.set(`plugins.${modelID}.pid`, pythonServerProcess.pid);
+
+  // logger.debug(`Started python process as PID ${pythonServerProcess.pid}`);
+
+  setupServerProcessHandlers(pythonProcess);
+
+  // await getFlaskIsReady(port, 0, 500);
+  await new Promise(resolve => setTimeout(resolve, 3000));
+  // logger.info('flask is ready');
+  logger.info(pythonProcess.pid)
+  logger.info(port)
+  return [pythonProcess.pid, port];
 }
 
 /**

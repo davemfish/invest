@@ -32,6 +32,7 @@ import {
   setupRemovePlugin,
   setupWindowsMSVCHandlers
 } from './setupAddRemovePlugin';
+import setupNotebookEnv from './setupNotebookEnv';
 import { ipcMainChannels } from './ipcMainChannels';
 import ELECTRON_DEV_MODE from './isDevMode';
 import { getLogger } from './logger';
@@ -167,6 +168,7 @@ export const createWindow = async () => {
   setupAddPlugin(i18n);
   setupRemovePlugin();
   setupWindowsMSVCHandlers();
+  setupNotebookEnv(i18n, mainWindow, ELECTRON_DEV_MODE);
   setupOpenLocalHtml(mainWindow, ELECTRON_DEV_MODE);
   if (ELECTRON_DEV_MODE) {
     // The timing of this is fussy due a chromium bug. It seems to only
