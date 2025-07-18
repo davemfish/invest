@@ -24,7 +24,8 @@ import { setupCheckStorageToken } from './setupCheckStorageToken';
 import {
   setupInvestRunHandlers,
   setupLaunchPluginServerHandler,
-  setupInvestLogReaderHandler
+  setupInvestLogReaderHandler,
+  setupInvestHtmlReaderHandler,
 } from './setupInvestHandlers';
 import {
   setupAddPlugin,
@@ -105,6 +106,7 @@ export const createWindow = async () => {
   setupGetElectronPaths();
   setupGetNCPUs();
   setupInvestLogReaderHandler();
+  setupInvestHtmlReaderHandler();
   setupOpenExternalUrl();
   setupRendererLogger();
   setupBaseUrl();

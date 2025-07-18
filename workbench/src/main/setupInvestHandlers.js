@@ -42,32 +42,31 @@ export function setupLaunchPluginServerHandler() {
 }
 
 function generateReport(script, investLogfile, workspace, suffix) {
-    const cmd = 'marimo'
-    const cmdArgs = [
-      'export', 'html', script,
-      '--no-include-code',
-      '-o', path.join(workspace, `report${suffix}.html`),
-      '--', '-logfile', investLogfile
-    ]
+  let outputFile = 'report.html';
+  if (suffix) {
+    outputFile = `report_${suffix}.html`
+  }
+  const cmd = 'marimo'
+  const cmdArgs = [
+    'export', 'html', script,
+    '--no-include-code',
+    '-o', path.join(workspace, outputFile),
+    '--', '-logfile', investLogfile
+  ]
 
-    // without shell, IOError when datastack.py loads json
-    const spawnOptions = { shell: true };
-    if (process.platform !== 'win32') {
-      // counter-intuitive, but w/ true: invest terminates when this shell terminates
-      spawnOptions.detached = true;
-    }
-    const marimo = spawn(cmd, cmdArgs, spawnOptions);
-    const stdOutCallback = (data) => {
-      logger.debug(`${data}`);
-    };
-    marimo.stdout.on('data', stdOutCallback);
-    marimo.stderr.on('data', stdOutCallback);
-    return marimo;
-    // marimo.on('exit', () => {
-    //   event.reply(`invest-exit-${tabID}`, {
-    //     code: code,
-    //   });
-    // })
+  // without shell, IOError when datastack.py loads json
+  const spawnOptions = { shell: true };
+  if (process.platform !== 'win32') {
+    // counter-intuitive, but w/ true: invest terminates when this shell terminates
+    spawnOptions.detached = true;
+  }
+  const marimo = spawn(cmd, cmdArgs, spawnOptions);
+  const stdOutCallback = (data) => {
+    logger.debug(`${data}`);
+  };
+  marimo.stdout.on('data', stdOutCallback);
+  marimo.stderr.on('data', stdOutCallback);
+  return marimo;
 }
 
 export function setupInvestRunHandlers() {
@@ -196,9 +195,9 @@ export function setupInvestRunHandlers() {
 
     investRun.on('exit', (code, signal) => {
       delete runningJobs[tabID];
-      event.reply(`invest-exit-${tabID}`, {
-        code: code,
-      });
+      // event.reply(`invest-exit-${tabID}`, {
+      //   code: code,
+      // });
       logger.debug(`invest exited with code: ${code} and signal: ${signal}`);
       fs.unlink(datastackPath, (err) => {
         if (err) { logger.error(err); }
@@ -211,12 +210,18 @@ export function setupInvestRunHandlers() {
       }
       if (code === 0) {
         const script = settingsStore.get(`models.${modelID}.script`);
-        const marimoProc = generateReport(script, investLogfile, args.workspace_dir, args.results_suffix);
-        marimoProc.on('exit', (_code, _signal) => {
-          logger.debug(`Marimo process exited with code ${_code} and signal ${_signal}`);
-          event.reply(`invest-html-${tabID}`, {
-            code: _code,
+        if (script) {
+          const marimoProc = generateReport(script, investLogfile, args.workspace_dir, args.results_suffix);
+          marimoProc.on('exit', (_code, _signal) => {
+            logger.debug(`Marimo process exited with code ${_code} and signal ${_signal}`);
+            event.reply(`invest-exit-${tabID}`, {
+              code: code,
+            });
           });
+        }
+      } else {
+        event.reply(`invest-exit-${tabID}`, {
+          code: code,
         });
       }
     });
@@ -246,14 +251,10 @@ export function setupInvestLogReaderHandler() {
 export function setupInvestHtmlReaderHandler() {
   ipcMain.handle(
     ipcMainChannels.INVEST_READ_HTML,
-    (event, file, channel) => {
-      fs.readFile(file, 'utf8', (err, data) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        return data;
-      });
+    async (event, file) => {
+      console.log("READING")
+      const html = await fs.promises.readFile(file, 'utf8');
+      return html;
     }
   );
 }

@@ -245,6 +245,11 @@ class InvestTab extends React.Component {
     const sidebarSetupElementId = `sidebar-setup-${tabID}`;
     const sidebarFooterElementId = `sidebar-footer-${tabID}`;
     const isCoreModel = investList[modelID].type === 'core';
+    let htmlFile = 'report.html';
+    if (argsValues?.results_suffix) {
+      htmlFile = `report_${argsValues.results_suffix}.html`;
+      console.log(htmlFile)
+    }
 
     return (
       <>
@@ -334,16 +339,16 @@ class InvestTab extends React.Component {
                     tabID={tabID}
                   />
                 </TabPane>
-                <TabPane
+                {/*<TabPane
                   eventKey="results"
                   aria-label="model results tab"
                 >
                   <ResultsTab
-                    htmlFile={`${argsValues.workspace_dir}/report${argsValues.results_suffix}.html`}
+                    htmlFile={`${argsValues.workspace_dir}/${htmlFile}`}
                     tabID={tabID}
                     status={status}
                   />
-                </TabPane>
+                </TabPane>*/}
               </TabContent>
             </Col>
           </Row>
