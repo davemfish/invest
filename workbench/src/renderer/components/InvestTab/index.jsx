@@ -18,7 +18,6 @@ import { withTranslation } from 'react-i18next';
 import ModelStatusAlert from './ModelStatusAlert';
 import SetupTab from '../SetupTab';
 import LogTab from '../LogTab';
-import ResultsTab from '../ResultsTab';
 import ResourcesLinks from '../ResourcesLinks';
 import { getSpec } from '../../server_requests';
 import { ipcMainChannels } from '../../../main/ipcMainChannels';
@@ -273,10 +272,6 @@ class InvestTab extends React.Component {
                   {t('Log')}
                   <MdKeyboardArrowRight />
                 </Nav.Link>
-                <Nav.Link eventKey="results" disabled={status !== 'success'}>
-                  {t('Results')}
-                  <MdKeyboardArrowRight />
-                </Nav.Link>
               </Nav>
               <div
                 className="sidebar-row sidebar-buttons"
@@ -339,16 +334,6 @@ class InvestTab extends React.Component {
                     tabID={tabID}
                   />
                 </TabPane>
-                {/*<TabPane
-                  eventKey="results"
-                  aria-label="model results tab"
-                >
-                  <ResultsTab
-                    htmlFile={`${argsValues.workspace_dir}/${htmlFile}`}
-                    tabID={tabID}
-                    status={status}
-                  />
-                </TabPane>*/}
               </TabContent>
             </Col>
           </Row>
