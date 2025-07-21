@@ -66,8 +66,8 @@ export default function ModelStatusAlert(props) {
       variant={alertVariant}
     >
       {alertMessage}
-      {WorkspaceButton}
       {ResultsButton}
+      {WorkspaceButton}
     </Alert>
   );
 }

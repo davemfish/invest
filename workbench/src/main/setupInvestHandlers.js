@@ -247,14 +247,3 @@ export function setupInvestLogReaderHandler() {
     }
   );
 }
-
-export function setupInvestHtmlReaderHandler() {
-  ipcMain.handle(
-    ipcMainChannels.INVEST_READ_HTML,
-    async (event, file) => {
-      console.log("READING")
-      const html = await fs.promises.readFile(file, 'utf8');
-      return html;
-    }
-  );
-}

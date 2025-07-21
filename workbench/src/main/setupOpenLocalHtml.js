@@ -12,14 +12,14 @@ export default function setupOpenLocalHtml(parentWindow, isDevMode) {
       const [width, height] = parentWindow.getSize();
       const child = new BrowserWindow({
         parent: parentWindow,
-        width: width > 1000 ? 1000 : width, // UG content is never wider
+        width: width > 1200 ? 1200 : width, // UG content is never wider
         height: height,
         frame: true,
       });
       setupContextMenu(child);
       child.loadURL(url);
       if (isDevMode) {
-        child.webContents.openDevTools();
+        // child.webContents.openDevTools();
       }
     }
   );

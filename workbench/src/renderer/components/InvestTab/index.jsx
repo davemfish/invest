@@ -196,11 +196,9 @@ class InvestTab extends React.Component {
     }
   }
 
-  async handleViewResults(logfile, modelID) {
-    const notebookURL = await ipcRenderer.invoke(
-      ipcMainChannels.GET_SETTING, `models.${modelID}.notebook`);
-    console.log('View Results');
-    ipcRenderer.send(ipcMainChannels.OPEN_NOTEBOOK, notebookURL, logfile);
+  async handleViewResults(htmlFile) {
+    console.log(htmlFile)
+    ipcRenderer.send(ipcMainChannels.OPEN_LOCAL_HTML, htmlFile);
   }
 
   showErrorModal(shouldShow) {
@@ -255,8 +253,9 @@ class InvestTab extends React.Component {
     let htmlFile = 'report.html';
     if (argsValues?.results_suffix) {
       htmlFile = `report_${argsValues.results_suffix}.html`;
-      console.log(htmlFile)
     }
+    const htmlPath = `${argsValues?.workspace_dir}/${htmlFile}`
+    console.log(htmlPath)
 
     return (
       <>
@@ -302,7 +301,7 @@ class InvestTab extends React.Component {
                       <ModelStatusAlert
                         status={status}
                         handleOpenWorkspace={() => this.handleOpenWorkspace(argsValues?.workspace_dir)}
-                        handleViewResults={() => this.handleViewResults(logfile, modelID)}
+                        handleViewResults={() => this.handleViewResults(htmlPath)}
                         terminateInvestProcess={this.terminateInvestProcess}
                       />
                     )
