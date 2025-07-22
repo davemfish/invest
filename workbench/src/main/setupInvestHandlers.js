@@ -195,9 +195,6 @@ export function setupInvestRunHandlers() {
 
     investRun.on('exit', (code, signal) => {
       delete runningJobs[tabID];
-      // event.reply(`invest-exit-${tabID}`, {
-      //   code: code,
-      // });
       logger.debug(`invest exited with code: ${code} and signal: ${signal}`);
       fs.unlink(datastackPath, (err) => {
         if (err) { logger.error(err); }
@@ -217,13 +214,13 @@ export function setupInvestRunHandlers() {
             event.reply(`invest-exit-${tabID}`, {
               code: code,
             });
+            return;
           });
         }
-      } else {
-        event.reply(`invest-exit-${tabID}`, {
-          code: code,
-        });
       }
+      event.reply(`invest-exit-${tabID}`, {
+        code: code,
+      });
     });
   });
 }
