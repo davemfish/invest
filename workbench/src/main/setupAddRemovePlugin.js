@@ -34,24 +34,28 @@ function spawnWithLogging(cmd, args, options) {
   let errMessage;
   if (cmdProcess.stdout) {
     cmdProcess.stderr.on('data', (data) => {
-      errMessage = data.toString();
+      // stderr emitted while the process is running
+      errMessage += data.toString();
       console.log('from stderr error listener')
       logger.info(errMessage);
     });
     cmdProcess.stdout.on('data', (data) => logger.info(data.toString()));
   }
+  cmdProcess.on('error', (err) => {
+    // this is not necessarily an event triggered when the process emits stderr
+    // https://nodejs.org/api/child_process.html#event-error
+    logger.error(err);
+    errMessage += err.toString();
+    // reject(err);
+  });
   return new Promise((resolve, reject) => {
-    cmdProcess.on('error', (err) => {
-      logger.error(err);
-      console.log('rejected from error handler')
-      reject(err);
-    });
+    // 'close' will always emit after 'exit' and 'error'
     cmdProcess.on('close', (code) => {
       if (code === 0) {
         resolve(code);
       } else {
-        // reject(errMessage);
-        console.log('would have rejected on close, not rejecting')
+        reject(errMessage);
+        console.log('rejected on close')
       }
     });
   });
