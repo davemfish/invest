@@ -1,5 +1,6 @@
-import upath from 'upath';
 import fs from 'fs';
+import path from 'path';
+import upath from 'upath';
 import { tmpdir } from 'os';
 import toml from 'toml';
 import { execFile, execSync, spawn } from 'child_process';
@@ -12,7 +13,7 @@ import { ipcMainChannels } from './ipcMainChannels';
 import { settingsStore } from './settingsStore';
 import { shutdownPythonProcess } from './createPythonFlaskProcess';
 
-const logger = getLogger(__filename.split('/').slice(-1)[0]);
+const logger = getLogger(path.basename(__filename));
 
 /**
  * Spawn a child process and log its stdout, stderr, and any error in spawning.
@@ -34,14 +35,16 @@ function spawnWithLogging(cmd, args, options) {
   let errMessage;
   if (cmdProcess.stdout) {
     cmdProcess.stderr.on('data', (data) => {
+      logger.info('from stderr callback')
+      logger.info(data)
       // stderr emitted while the process is running
       errMessage += data.toString();
-      console.log('from stderr error listener')
       logger.info(errMessage);
     });
     cmdProcess.stdout.on('data', (data) => logger.info(data.toString()));
   }
   cmdProcess.on('error', (err) => {
+    logger.info('on error event callback')
     // this is not necessarily an event triggered when the process emits stderr
     // https://nodejs.org/api/child_process.html#event-error
     logger.error(err);
@@ -50,12 +53,15 @@ function spawnWithLogging(cmd, args, options) {
   });
   return new Promise((resolve, reject) => {
     // 'close' will always emit after 'exit' and 'error'
+    logger.info('returned promise callback')
     cmdProcess.on('close', (code) => {
+      logger.info('close event', code)
       if (code === 0) {
+        logger.info('resolved on close')
         resolve(code);
       } else {
+        logger.info('rejected on close')
         reject(errMessage);
-        console.log('rejected on close')
       }
     });
   });
