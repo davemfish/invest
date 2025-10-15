@@ -35,6 +35,7 @@ function spawnWithLogging(cmd, args, options) {
   if (cmdProcess.stdout) {
     cmdProcess.stderr.on('data', (data) => {
       errMessage = data.toString();
+      console.log('from stderr error listener')
       logger.info(errMessage);
     });
     cmdProcess.stdout.on('data', (data) => logger.info(data.toString()));
@@ -42,13 +43,15 @@ function spawnWithLogging(cmd, args, options) {
   return new Promise((resolve, reject) => {
     cmdProcess.on('error', (err) => {
       logger.error(err);
+      console.log('rejected from error handler')
       reject(err);
     });
     cmdProcess.on('close', (code) => {
       if (code === 0) {
         resolve(code);
       } else {
-        reject(errMessage);
+        // reject(errMessage);
+        console.log('would have rejected on close, not rejecting')
       }
     });
   });

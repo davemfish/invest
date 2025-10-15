@@ -45,7 +45,7 @@ import setupOpenExternalUrl from './setupOpenExternalUrl';
 import setupOpenLocalHtml from './setupOpenLocalHtml';
 import setupRendererLogger from './setupRendererLogger';
 
-const logger = getLogger(__filename.split('/').slice(-1)[0]);
+const logger = getLogger(path.basename(__filename));
 
 process.on('uncaughtException', (err) => {
   logger.error(err);
