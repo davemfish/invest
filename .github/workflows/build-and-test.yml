@@ -388,7 +388,9 @@ jobs:
         run: make userguide
 
       - name: Build binaries
-        run: make CONDA="$MAMBA_EXE" binaries
+        run: |
+          python scripts/debug_pyinstaller_conda_hook.py
+          make CONDA="$MAMBA_EXE" binaries
 
       - name: Install Node.js
         uses: actions/setup-node@v6
