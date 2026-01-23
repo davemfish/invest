@@ -47,7 +47,7 @@ def _get_render_args(model_spec):
     }
 
 
-# @unittest.skipIf(sys.platform.startswith("win"), "segfaults on Windows")
+@unittest.skipIf(sys.platform.startswith("win"), "segfaults on Windows")
 class SDR_NDR_TemplateTests(unittest.TestCase):
     """Unit tests for SDR/NDR template."""
 
