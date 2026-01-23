@@ -13,10 +13,10 @@ def _get_render_args(model_spec):
     args_dict = {'suffix': 'test'}
     img_src = 'bAse64eNcoDEdIMagE'
     intermediate_outputs_heading = 'Intermediate Outputs'
-    ws_vector_table = '<table class="test__results-table></table>'
+    ws_vector_table = '<table class="test__results-table"></table>'
     ws_vector_totals_table = '<table class="test__totals-table"></table>'
-    output_stats_table = '<table class="test__output-stats-table></table>'
-    input_stats_table = '<table class="test__input-stats-table></table>'
+    output_stats_table = '<table class="test__output-stats-table"></table>'
+    input_stats_table = '<table class="test__input-stats-table"></table>'
     stats_table_note = 'This is a test!'
     inputs_caption = ['input.tif:Input map.']
     outputs_caption = ['results.tif:Results map.']
@@ -47,7 +47,7 @@ def _get_render_args(model_spec):
     }
 
 
-@unittest.skipIf(sys.platform.startswith("win"), "segfaults on Windows")
+# @unittest.skipIf(sys.platform.startswith("win"), "segfaults on Windows")
 class SDR_NDR_TemplateTests(unittest.TestCase):
     """Unit tests for SDR/NDR template."""
 
@@ -83,7 +83,7 @@ class SDR_NDR_TemplateTests(unittest.TestCase):
     def test_watershed_results_totals(self):
         """Totals should be rendered when passed to the render function."""
 
-        ws_vector_table = '<table class="test__results-table></table>'
+        ws_vector_table = '<table class="test__results-table"></table>'
         ws_vector_totals_table = '<table class="test__totals-table"></table>'
 
         # Note that args_dict=None, which isn't exactly realistic,
@@ -125,7 +125,7 @@ class SDR_NDR_TemplateTests(unittest.TestCase):
     def test_watershed_results_without_totals(self):
         """Totals should be not be rendered when there are none to render."""
 
-        ws_vector_table = '<table class="test__results-table></table>'
+        ws_vector_table = '<table class="test__results-table"></table>'
         ws_vector_totals_table = None
 
         # Note that args_dict=None, which isn't exactly realistic,
