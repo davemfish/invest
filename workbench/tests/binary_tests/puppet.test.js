@@ -290,7 +290,9 @@ test('Open each model and each local userguide', async () => {
     const isPlugin = await btn.$('::-p-text(Plugin)');
     if (isPlugin) { continue; } // plugins do not have local UG
     await btn.click();
+    console.log('clicked model button')
     const link = await page.waitForSelector('text/User\'s Guide');
+    console.log('waited for UG link on model tab')
     const hrefHandle = await link.getProperty('href');
     const hrefValue = await hrefHandle.jsonValue();
     console.log(hrefValue);
@@ -298,17 +300,23 @@ test('Open each model and each local userguide', async () => {
     const ugTarget = await BROWSER.waitForTarget(
       (target) => target.url() === hrefValue
     );
+    console.log('waited for target browser')
     const ugPage = await ugTarget.page();
     try {
       await ugPage.waitForSelector('text/Table of Contents');
     } catch {
       throw new Error(`${hrefValue} not found`);
     }
+    console.log('waited for TOC')
 
     await ugPage.close();
+    console.log('closed browser page')
     const tab = await page.waitForSelector('.nav-item');
+    console.log('waited for model tab')
     const closeTabBtn = await tab.waitForSelector('aria/[role="button"]');
+    console.log('waited for close button on tab')
     await closeTabBtn.click();
+    console.log('closed model tab')
     await new Promise(r => setTimeout(r, 100)); // allow for Home Tab to be visible again
   }
 }, 480000);
