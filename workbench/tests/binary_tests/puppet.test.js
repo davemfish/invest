@@ -117,6 +117,10 @@ beforeEach(() => {
       // disable gpu because macos runners display:
       // ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer
       '--disable-gpu',
+      // Some other recommendations for errors we've seen
+      // https://github.com/puppeteer/puppeteer/issues/12857
+      '--enable-features=NetworkServiceInProcess2',
+      '--no-sandbox',
     ],
     {
       shell: true,
@@ -289,6 +293,7 @@ test('Open each model and each local userguide', async () => {
     const link = await page.waitForSelector('text/User\'s Guide');
     const hrefHandle = await link.getProperty('href');
     const hrefValue = await hrefHandle.jsonValue();
+    console.log(hrefValue);
     await link.click();
     const ugTarget = await BROWSER.waitForTarget(
       (target) => target.url() === hrefValue
