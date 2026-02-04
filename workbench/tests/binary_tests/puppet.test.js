@@ -15,7 +15,7 @@ import pkg from '../../package.json';
 import { APP_HAS_RUN_TOKEN } from '../../src/main/setupCheckFirstRun';
 import { APP_VERSION_TOKEN } from '../../src/main/setupIsNewVersion';
 
-jest.setTimeout(240000);
+jest.setTimeout(480000);
 const PORT = 9009;
 let ELECTRON_PROCESS;
 let BROWSER;
@@ -127,6 +127,7 @@ beforeEach(() => {
     console.log(`${data}`);
   });
   const stdOutCallback = async (data) => {
+    console.log(`${data}`);
     // Here's how we know the electron window is ready to connect to
     if (`${data}`.match('main window loaded')) {
       try {
@@ -235,12 +236,12 @@ test('Run a real invest model', async () => {
   // Cancel button does not appear until after invest has confirmed
   // it is running. So extra timeout on the query:
   const cancelButton = await sidebar.waitForSelector(
-    'aria/[name="Cancel Run"][role="button"]', { timeout: 15000 });
+    'aria/[name="Cancel Run"][role="button"]', { timeout: 30000 });
   await cancelButton.click();
   await sidebar.waitForSelector('text/Run Canceled');
   await page.waitForSelector('aria/[name="Open Workspace"][role="button"]');
   await page.screenshot({ path: `${SCREENSHOT_PREFIX}6-run-canceled.png` });
-}, 240000); // >2x the sum of all the max timeouts within this test
+}, 480000); // >2x the sum of all the max timeouts within this test
 
 test('Open each model and each local userguide', async () => {
   // On GHA MacOS, we seem to have to wait a long time for the browser
@@ -305,7 +306,7 @@ test('Open each model and each local userguide', async () => {
     await closeTabBtn.click();
     await new Promise(r => setTimeout(r, 100)); // allow for Home Tab to be visible again
   }
-});
+}, 480000);
 
 test.skip('Install and run a plugin', async () => {
   // On GHA MacOS, we seem to have to wait a long time for the browser
