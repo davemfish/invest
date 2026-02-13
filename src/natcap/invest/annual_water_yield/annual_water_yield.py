@@ -3,6 +3,7 @@ import logging
 import math
 import pickle
 
+from natcap.invest.annual_water_yield import reporter
 import numpy
 import pygeoprocessing
 from osgeo import gdal
@@ -145,6 +146,7 @@ MODEL_SPEC = spec.ModelSpec(
     model_id="annual_water_yield",
     model_title=gettext("Annual Water Yield"),
     userguide="annual_water_yield.html",
+    reporter="natcap.invest.annual_water_yield.reporter",
     input_field_order=[
         ["workspace_dir", "results_suffix"],
         ["precipitation_path", "eto_path", "depth_to_root_rest_layer_path", "pawc_path"],

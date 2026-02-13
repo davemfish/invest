@@ -310,7 +310,7 @@ def _figure_subplots(xy_ratio, n_plots):
 def _get_title_line_width(n_plots: int, xy_ratio: float) -> int:
     # Max line widths determined experimentally; may change if needed.
     if n_plots == 1 or _extra_wide_aoi(xy_ratio):
-        return 50  # 1-column layout
+        return 20  # 1-column layout
     elif n_plots == 2 or _wide_aoi(xy_ratio):
         return 40  # 2-column layout
     else:

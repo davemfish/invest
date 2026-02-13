@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+  {{ super() }}
+  {% include 'datatable-styles.html' %}
+{% endblock styles %}
+
+{% block content %}
+
+  {{ super() }}
+
+  {% from 'args-table.html' import args_table %}
+  {% from 'caption.html' import caption %}
+  {% from 'content-grid.html' import content_grid %}
+  {% from 'metadata.html' import list_metadata %}
+  {% from 'raster-plot-img.html' import raster_plot_img %}
+  {% from 'wide-table.html' import wide_table %}
+
+  <p>{{ model_description }}</p>
+
+  <h2 class="section-header">Results</h2>
+
+  {{ accordion_section(
+    'Primary Outputs',
+    content_grid([
+      (raster_plot_img(primary_raster_outputs, 'Primary Outputs'), 100),
+      (caption(outputs_caption, definition_list=True), 100)
+    ])
+  )}}
+
+  <h2 class="section-header">Metadata</h2>
+
+  {{
+    accordion_section(
+      'Output Filenames and Descriptions',
+      list_metadata(model_spec_outputs),
+      expanded=False
+    )
+  }}
+
+{% endblock content %}
+
+{% block scripts %}
+  {{ super() }}
+  {% include 'datatable-js.html' %}
+{% endblock scripts %}
