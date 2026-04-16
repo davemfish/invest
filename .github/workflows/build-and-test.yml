@@ -374,8 +374,7 @@ jobs:
 
       - name: Check find tool
         run: |
-          which find
-          where find
+          find --help
 
       - name: Set up conda environment
         uses: ./.github/actions/setup_env
