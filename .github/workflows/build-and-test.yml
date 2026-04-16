@@ -372,6 +372,11 @@ jobs:
         with:
           fetch-depth: 0 # Fetch complete history for accurate versioning
 
+      - name: Check find tool
+        run: |
+          which find
+          where find
+
       - name: Set up conda environment
         uses: ./.github/actions/setup_env
         with:
@@ -501,7 +506,7 @@ jobs:
         id: invest-autotest
         if : |
           (github.event_name == 'push' &&
-          (startsWith(github.ref, 'refs/heads/release') || github.ref == 'refs/heads/main')) ||
+          (startsWith(github.ref, 'refs/heads/bugfix') || github.ref == 'refs/heads/main')) ||
           (github.event_name == 'pull_request' && startsWith(github.head_ref, 'autorelease'))
         run: |
           mkdir autotest_dir
@@ -511,6 +516,8 @@ jobs:
         id: invest-autotest-deploy
         if: steps.invest-autotest.outcome == 'success' && matrix.os == 'windows-latest'
         run: |
+          which find
+          where find
           make deploy_autotest_reports AUTOTEST_DIR=autotest_dir
           make print-REPORTS_BASE_URL >> $GITHUB_OUTPUT
 
