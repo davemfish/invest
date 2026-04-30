@@ -36,6 +36,7 @@ kwargs = {
         'rtree',  # mac builds aren't picking up rtree by default.
         'pkg_resources.py2_warn',
         'cmath',
+        'chardet',
         'charset_normalizer',
         'scipy.special._cdflib',
         'scipy.special._special_ufuncs',
