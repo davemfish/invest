@@ -39,25 +39,10 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
     """
     # Plot PUD, TUD, and combined results as choropleths.
     regression_data = geopandas.read_file(file_registry['regression_data'])
-    # chart = altair.Chart(regression_data).mark_geoshape(
-    #     stroke="white",
-    #     strokeWidth=0.5
-    # ).project(
-    #     type='identity',
-    #     reflectY=True
-    # ).encode(
-    #     color=altair.Color(
-    #         altair.repeat('column'),
-    #         type='quantitative',
-    #         scale=altair.Scale(scheme='viridis')
-    #     ).legend(format='.2f')
-    # ).repeat(
-    #     column=['pr_PUD', 'pr_TUD', 'avg_pr_UD']
-    # ).resolve_scale(color='independent')
-    # vis_map_json = chart.to_json()
 
     vis_charts = []
     for var in ['pr_PUD', 'pr_TUD', 'avg_pr_UD']:
+        min_val = regression_data[var][regression_data[var] > 0].min()
         chart = altair.Chart(regression_data).mark_geoshape(
             stroke="gray",
             strokeWidth=0.5,
@@ -73,16 +58,11 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
                     scale=altair.Scale(
                         scheme='viridis',
                         type='log',
-                        domainMin=0.00001,
-                        # type='threshold',
-                        # domain=[0.01, 0.05, 0.1, 0.25, 0.5]
+                        domainMin=min_val,  # must exclude 0s if using log
                     )
                 ),
                 altair.value('white')
             ),
-            # tooltip=[
-            #     altair.Tooltip(f'{var}:Q', title=var)
-            # ]
         )
         vis_charts.append(chart)
 
