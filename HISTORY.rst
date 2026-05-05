@@ -73,6 +73,9 @@ General
 * ``Input, Output, and ModelSpec`` classes now create immutable objects.
   Use ``model_copy(update=dict(...))`` to copy an object and update attributes.
   (`#2228 <https://github.com/natcap/invest/issues/2228>`_)
+* Made some styling and usability improvements to the Vega-Lite visualizations
+  (e.g., vector plots, histograms) that appear in some InVEST reports.
+  (`#2532 <https://github.com/natcap/invest/issues/2532>`_)
 
 Workbench
 =========
@@ -107,6 +110,15 @@ General
   ``deploy_data``, ``deploy_userguide``, ``deploy_workbench``) and updated
   these targets to fail on missing artifacts instead of silently ignoring
   errors. (`#831 <https://github.com/natcap/invest/issues/813>`_)
+* Pre-built wheels are now constrained to require one specific minor version of
+  GDAL in an attempt to ensure compatibility of the compiled extensions with
+  the version of ``libgdal`` available. Users who need a different GDAL version
+  may install ``natcap.invest`` from conda-forge or build their own wheel from
+  source. (`#2206 <https://github.com/natcap/invest/issues/2206>`_)
+* The ``manylinux_2_39`` wheels have been replaced with ``linux`` wheels built
+  on Ubuntu. This reduces the size of the wheels and avoids licensing concerns
+  around redistributing libraries.
+  (`#2483 <https://github.com/natcap/invest/issues/2483>`_)
 
 Workbench
 =========
