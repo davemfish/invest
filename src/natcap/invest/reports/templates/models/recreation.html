@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+  {{ super() }}
+  {% include 'datatable-styles.html' %}
+{% endblock styles %}
+
+{% block content %}
+
+  {{ super() }}
+
+  {% from 'args-table.html' import args_table %}
+  {% from 'caption.html' import caption %}
+  {% from 'content-grid.html' import content_grid %}
+  {% from 'metadata.html' import list_metadata %}
+
+  <h2 class="section-header">Results</h2>
+
+  {{ accordion_section(
+    'Visitation Maps',
+    content_grid([
+      ('<div id="visitation_maps" class="loading"></div>', 100),
+      (caption(visitation_maps_caption, definition_list=True), 100)
+    ])
+  )}}
+
+  <h2 class="section-header">Inputs</h2>
+
+  {% if args_dict != None %}
+    {{ accordion_section(
+      'Arguments',
+      args_table(args_dict)
+    )}}
+  {% endif %}
+
+  <h2 class="section-header">Metadata</h2>
+
+  {{
+    accordion_section(
+      'Output Filenames and Descriptions',
+      list_metadata(model_spec_outputs),
+      expanded=False
+    )
+  }}
+
+{% endblock content %}
+
+{% from 'vegalite-plot.html' import embed_vega %}
+{% block scripts %}
+  {{ super() }}
+  <script src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  {% include 'vega-embed-js.html' %}
+  {% set chart_spec_id_list = [
+    (vis_map_json, 'visitation_maps'),
+  ] %}
+  {{ embed_vega(chart_spec_id_list) }}
+{% endblock scripts %}
