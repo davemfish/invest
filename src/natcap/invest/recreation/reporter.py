@@ -11,14 +11,40 @@ import pygeoprocessing
 
 from natcap.invest import __version__
 from natcap.invest import gettext
-from natcap.invest.reports import jinja_env, raster_utils, report_constants
-from natcap.invest.reports.raster_utils import RasterDatatype, RasterPlotConfig
+from natcap.invest.reports import jinja_env
+from natcap.invest.reports import vector_utils
 from natcap.invest.spec import ModelSpec
 from natcap.invest.unit_registry import u
 
 LOGGER = logging.getLogger(__name__)
 
 TEMPLATE = jinja_env.get_template('models/recreation.html')
+
+
+def plot_visitation_map(geodataframe, variable):
+    min_val = geodataframe[variable][geodataframe[variable] > 0].min()
+    chart = altair.Chart(geodataframe).mark_geoshape(
+        stroke="gray",
+        strokeWidth=0.5,
+    ).project(
+        type='identity',
+        reflectY=True
+    ).encode(
+        fill=altair.condition(
+            altair.datum[variable] > 0,
+            altair.Fill(
+                variable,
+                type='quantitative',
+                scale=altair.Scale(
+                    scheme='viridis',
+                    type='log',
+                    domainMin=min_val,  # must exclude 0s if using log
+                )
+            ),
+            altair.value('white')
+        ),
+    )
+    return chart
 
 
 def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
@@ -39,58 +65,91 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
     """
     # Plot PUD, TUD, and combined results as choropleths.
     regression_data = geopandas.read_file(file_registry['regression_data'])
-
     vis_charts = []
     for var in ['pr_PUD', 'pr_TUD', 'avg_pr_UD']:
-        min_val = regression_data[var][regression_data[var] > 0].min()
-        chart = altair.Chart(regression_data).mark_geoshape(
-            stroke="gray",
-            strokeWidth=0.5,
-        ).project(
-            type='identity',
-            reflectY=True
-        ).encode(
-            fill=altair.condition(
-                altair.datum[var] > 0,
-                altair.Fill(
-                    var,
-                    type='quantitative',
-                    scale=altair.Scale(
-                        scheme='viridis',
-                        type='log',
-                        domainMin=min_val,  # must exclude 0s if using log
-                    )
-                ),
-                altair.value('white')
-            ),
-        )
+        chart = plot_visitation_map(regression_data, var)
         vis_charts.append(chart)
-
-    # TODO: check aspect ratio and choose hconcat vs vconcat
-    vis_map_json = altair.hconcat(
-        *vis_charts).resolve_scale(fill='independent').to_json()
-
-    vistation_maps_caption = 'a caption'
 
     # Give user options for transformations and display?
     # Plotting points instead of polygons is significantly cheaper, 1 vertex instead
     # of 5 or 7, and all the 0s could be omitted, maybe.  
 
-    if file_registry['scenario_results']:
-        # Plot side-by-side baseline and scenario visitation maps
-        # This either relies on the new fitted baseline values from
-        # https://github.com/natcap/invest/issues/2148
-        # or duplicates a map from above
-        pass
+    # if file_registry['scenario_results']:
+    #     # Plot side-by-side baseline and scenario visitation maps
+    #     # This either relies on the new fitted baseline values from
+    #     # https://github.com/natcap/invest/issues/2148
+    #     # or duplicates a map from above
+    #     scenario_data = geopandas.read_file(file_registry['scenario_results'])
+    #     # TODO: can there be negative values? Probably clamp to 0 if so.
+    #     var = 'pr_UD_EST'
+    #     chart = plot_visitation_map(scenario_data, var)
+    #     vis_charts.append(chart)
+
+    # TODO: check aspect ratio and choose hconcat vs vconcat
+    vis_maps_chart = altair.hconcat(
+        *vis_charts
+    ).resolve_scale(
+        fill='independent'
+    )
+    vis_maps_dict = vis_maps_chart.to_dict()
+    regression_data_name = list(vis_maps_dict['datasets'])[0]
+    regression_data_json = json.dumps(vis_maps_dict['datasets'][regression_data_name])
+    vis_maps_dict['datasets'][regression_data_name] = []
+    vis_maps_json = json.dumps(vis_maps_dict)
+
+    # vis_maps_json = vis_maps_chart.to_json()
+
+    vistation_maps_caption = 'a caption'
 
     # Plot annual and monthly results? Not neccessary at first
 
     if file_registry['regression_coefficients']:
+        estimates_df = pandas.read_csv(file_registry['regression_coefficients'])
+        predictor_variables = estimates_df['predictor']
+        predictor_variables = predictor_variables[predictor_variables != '(Intercept)']
         # Display table of regression coefficients & regression_summary.txt stats
 
         # Plot effect sizes of predictors
 
         # Plot maps of aggregated predictors
+        predictor_maps = []
+        for variable in predictor_variables:
+            chart = altair.Chart(regression_data).mark_geoshape(
+                stroke="gray",
+                strokeWidth=0.5,
+            ).project(
+                type='identity',
+                reflectY=True
+            ).encode(
+                fill=altair.condition(
+                    altair.datum[variable] > 0,
+                    altair.Fill(
+                        variable,
+                        type='quantitative',
+                        scale=altair.Scale(
+                            scheme='viridis',
+                            # type='log',
+                            # domainMin=min_val,  # must exclude 0s if using log
+                        )
+                    ),
+                    altair.value('white')
+                ),
+            )
+            predictor_maps.append(chart)
+
+        predictor_maps_chart = altair.hconcat(
+            *predictor_maps
+        ).resolve_scale(
+            fill='independent'
+        )
+
+        predictor_maps_dict = predictor_maps_chart.to_dict()
+        predictor_maps_dict['datasets'][regression_data_name] = []
+        predictor_maps_json = json.dumps(predictor_maps_dict)
+        
+        # predictor_maps_json = predictor_maps_chart.to_json()
+
+        predictor_maps_caption = 'a caption'
 
         # Plot distributions of predictor and response variables
 
@@ -109,8 +168,12 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             timestamp=time.strftime('%Y-%m-%d %H:%M'),
             args_dict=args_dict,
             model_spec_outputs=model_spec.outputs,
-            vis_map_json=vis_map_json,
+            vis_maps_json=vis_maps_json,
             visitation_maps_caption=vistation_maps_caption,
+            predictor_maps_json=predictor_maps_json,
+            predictor_maps_caption=predictor_maps_caption,
+            regression_data_name=regression_data_name,
+            regression_data_json=regression_data_json
         ))
 
     LOGGER.info(f'Created {target_html_filepath}')

@@ -1,6 +1,3 @@
-import altair
-
-
 LEGEND_CONFIG = {
     'labelFontSize': 14,
     'titleFontSize': 14,

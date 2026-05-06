@@ -24,6 +24,14 @@
     ])
   )}}
 
+  {{ accordion_section(
+    'Predictor Maps',
+    content_grid([
+      ('<div id="predictor_maps" class="loading"></div>', 100),
+      (caption(predictor_maps_caption, definition_list=True), 100)
+    ])
+  )}}
+
   <h2 class="section-header">Inputs</h2>
 
   {% if args_dict != None %}
@@ -51,9 +59,13 @@
   <script src="https://cdn.jsdelivr.net/npm/vega@6"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.3"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <script>
+    var vegaData = {{ regression_data_json | safe }};
+  </script>
   {% include 'vega-embed-js.html' %}
   {% set chart_spec_id_list = [
-    (vis_map_json, 'visitation_maps'),
+    (vis_maps_json, 'visitation_maps'),
+    (predictor_maps_json, 'predictor_maps'),
   ] %}
-  {{ embed_vega(chart_spec_id_list) }}
+  {{ embed_vega(chart_spec_id_list, regression_data_name) }}
 {% endblock scripts %}

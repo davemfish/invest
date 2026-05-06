@@ -1,5 +1,5 @@
 <script type="text/javascript">
-  function embedVega(chart_spec, elId) {
+  function embedVega(chart_spec, datasetName, elId) {
     function showError(el, error) {
       el.innerHTML = (`
         <div style="color:red;">
@@ -13,6 +13,7 @@
       throw error;
     }
     let el = document.getElementById(elId);
+    chart_spec['datasets'][datasetName] = vegaData;
     vegaEmbed(`#${elId}`, chart_spec, {
       // https://vega.github.io/vega-embed/#options
       mode: 'vega-lite',
