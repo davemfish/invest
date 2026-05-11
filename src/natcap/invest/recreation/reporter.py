@@ -116,14 +116,50 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
     # Plot annual and monthly results? Not neccessary at first
 
     if 'regression_coefficients' in file_registry:
-        estimates_df = pandas.read_csv(file_registry['regression_coefficients'])
-        predictor_variables = estimates_df['predictor']
-        predictor_variables = predictor_variables[predictor_variables != '(Intercept)']
+        estimates_df = pandas.read_csv(
+            file_registry['regression_coefficients'])
+
         # Display table of regression coefficients & regression_summary.txt stats
+        effect_size_table = estimates_df.to_html(index=False)
 
         # Plot effect sizes of predictors
+        def plot_effect_sizes(dataframe):
+            # drop the intercept predictor row
+            dataframe = dataframe[dataframe['predictor'] != '(Intercept)'].copy()
+            dataframe['lower_stderr'] = dataframe['estimate'] - dataframe['stderr']
+            dataframe['upper_stderr'] = dataframe['estimate'] + dataframe['stderr']
+            max_abs_value = max(dataframe['lower_stderr'].abs().max(), dataframe['upper_stderr'].abs().max())
+            base = altair.Chart(dataframe)
+            effect_size = base.mark_point(
+                color='red',
+                size=100
+            ).encode(
+                x=altair.X(
+                    'estimate:Q',
+                    scale=altair.Scale(
+                        domain=[-max_abs_value, max_abs_value],
+                        domainMid=0),
+                    title='Effect size (coefficient estimate)'),
+                y=altair.Y('predictor:N', title='Predictor variable')
+            )
+            effect_stderr = base.mark_rule().encode(
+                x='lower_stderr:Q',
+                x2='upper_stderr:Q',
+                y=altair.Y('predictor:N')
+            )
+            effect_size_chart = effect_stderr + effect_size
+            effect_size_chart = effect_size_chart.properties(
+                width=400,
+                height=400
+            ).configure_axis(**vector_utils.AXIS_CONFIG)
+            return effect_size_chart
+
+        effect_size_chart = plot_effect_sizes(estimates_df)
+        effect_size_chart_json = effect_size_chart.to_json()
 
         # Plot maps of aggregated predictors
+        predictor_variables = estimates_df['predictor']
+        predictor_variables = predictor_variables[predictor_variables != '(Intercept)']
         predictor_maps = []
         for variable in predictor_variables:
             chart = altair.Chart(regression_data).mark_geoshape(
@@ -163,18 +199,9 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             fill='independent'
         )
 
-        # predictor_maps_chart = altair.hconcat(
-        #     *predictor_maps
-        # ).resolve_scale(
-        #     fill='independent'
-        # )
-
         predictor_maps_dict = predictor_maps_chart.to_dict()
         predictor_maps_dict['datasets'][regression_data_name] = []
         predictor_maps_json = json.dumps(predictor_maps_dict)
-        
-        # predictor_maps_json = predictor_maps_chart.to_json()
-
         predictor_maps_caption = 'a caption'
 
         # Plot distributions of predictor and response variables
@@ -199,7 +226,9 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             predictor_maps_json=predictor_maps_json,
             predictor_maps_caption=predictor_maps_caption,
             regression_data_name=regression_data_name,
-            regression_data_json=regression_data_json
+            regression_data_json=regression_data_json,
+            effect_size_chart_json=effect_size_chart_json,
+            effect_size_table=effect_size_table,
         ))
 
     LOGGER.info(f'Created {target_html_filepath}')

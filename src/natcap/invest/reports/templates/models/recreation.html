@@ -32,6 +32,15 @@
     ])
   )}}
 
+  {{ accordion_section(
+    'Predictor effect sizes',
+    content_grid([
+      ('<div id="effect_size_chart" class="loading"></div>', 50),
+      (effect_size_table | safe, 50),
+      (caption(predictor_maps_caption, definition_list=True), 100)
+    ])
+  )}}
+
   <h2 class="section-header">Inputs</h2>
 
   {% if args_dict != None %}
@@ -66,6 +75,7 @@
   {% set chart_spec_id_list = [
     (vis_maps_json, 'visitation_maps'),
     (predictor_maps_json, 'predictor_maps'),
+    (effect_size_chart_json, 'effect_size_chart'),
   ] %}
   {{ embed_vega(chart_spec_id_list, regression_data_name) }}
 {% endblock scripts %}
