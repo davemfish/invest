@@ -13,6 +13,7 @@ from natcap.invest import __version__
 from natcap.invest import gettext
 from natcap.invest.reports import jinja_env
 from natcap.invest.reports import vector_utils
+from natcap.invest.reports import raster_utils
 from natcap.invest.spec import ModelSpec
 from natcap.invest.unit_registry import u
 
@@ -64,31 +65,42 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
         ``None``
     """
     # Plot PUD, TUD, and combined results as choropleths.
-    regression_data = geopandas.read_file(file_registry['regression_data'])
     vis_charts = []
-    for var in ['pr_PUD', 'pr_TUD', 'avg_pr_UD']:
+    regression_data = geopandas.read_file(file_registry['regression_data'])
+    visitation_variables = ['pr_PUD', 'pr_TUD', 'avg_pr_UD']
+    if 'scenario_results' in file_registry:
+        # Join tables so that all vegalite specifications can share the dataset
+        scenario_data = geopandas.read_file(file_registry['scenario_results'])
+        regression_data['pr_UD_EST'] = scenario_data['pr_UD_EST']
+        visitation_variables.append('pr_UD_EST')
+    for var in visitation_variables:
         chart = plot_visitation_map(regression_data, var)
         vis_charts.append(chart)
 
     # Give user options for transformations and display?
     # Plotting points instead of polygons is significantly cheaper, 1 vertex instead
-    # of 5 or 7, and all the 0s could be omitted, maybe.  
+    # of 5 or 7, and all the 0s could be omitted, maybe.
 
-    # if file_registry['scenario_results']:
-    #     # Plot side-by-side baseline and scenario visitation maps
-    #     # This either relies on the new fitted baseline values from
-    #     # https://github.com/natcap/invest/issues/2148
-    #     # or duplicates a map from above
-    #     scenario_data = geopandas.read_file(file_registry['scenario_results'])
-    #     # TODO: can there be negative values? Probably clamp to 0 if so.
-    #     var = 'pr_UD_EST'
-    #     chart = plot_visitation_map(scenario_data, var)
-    #     vis_charts.append(chart)
+    xmin, ymin, xmax, ymax = regression_data.total_bounds
+    xy_ratio = (xmax - xmin) / (ymax - ymin)
+    if raster_utils._extra_wide_aoi(xy_ratio):
+        vis_maps_chart = altair.vconcat(*vis_charts)
+    else:
+        if len(vis_charts) == 4:
+            vis_maps_chart = altair.vconcat(
+                altair.hconcat(*vis_charts[:2]).resolve_scale(
+                    fill='independent'
+                ),
+                altair.hconcat(*vis_charts[2:]).resolve_scale(
+                    fill='independent'
+                )
+            )
+        elif raster_utils._wide_aoi(xy_ratio):
+            vis_maps_chart = altair.vconcat(*vis_charts)
+        else:
+            vis_maps_chart = altair.hconcat(*vis_charts)
 
-    # TODO: check aspect ratio and choose hconcat vs vconcat
-    vis_maps_chart = altair.hconcat(
-        *vis_charts
-    ).resolve_scale(
+    vis_maps_chart = vis_maps_chart.resolve_scale(
         fill='independent'
     )
     vis_maps_dict = vis_maps_chart.to_dict()
@@ -103,7 +115,7 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
 
     # Plot annual and monthly results? Not neccessary at first
 
-    if file_registry['regression_coefficients']:
+    if 'regression_coefficients' in file_registry:
         estimates_df = pandas.read_csv(file_registry['regression_coefficients'])
         predictor_variables = estimates_df['predictor']
         predictor_variables = predictor_variables[predictor_variables != '(Intercept)']
@@ -137,11 +149,25 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             )
             predictor_maps.append(chart)
 
-        predictor_maps_chart = altair.hconcat(
-            *predictor_maps
+        n_rows, n_cols = raster_utils._choose_n_rows_n_cols(
+            xy_ratio, len(predictor_maps), small_plots=False)
+
+        predictor_maps_chart = altair.vconcat(
+            altair.hconcat(*predictor_maps[:n_cols]).resolve_scale(
+                fill='independent'
+            ),
+            altair.hconcat(*predictor_maps[n_cols:]).resolve_scale(
+                fill='independent'
+            )
         ).resolve_scale(
             fill='independent'
         )
+
+        # predictor_maps_chart = altair.hconcat(
+        #     *predictor_maps
+        # ).resolve_scale(
+        #     fill='independent'
+        # )
 
         predictor_maps_dict = predictor_maps_chart.to_dict()
         predictor_maps_dict['datasets'][regression_data_name] = []
