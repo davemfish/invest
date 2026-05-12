@@ -41,6 +41,14 @@
     ])
   )}}
 
+  {{ accordion_section(
+    'Correlations Between Predictors and Response Variable',
+    content_grid([
+      ('<div id="correlation_plot" class="loading"></div>', 100),
+      (caption(predictor_maps_caption, definition_list=True), 100)
+    ])
+  )}}
+
   <h2 class="section-header">Inputs</h2>
 
   {% if args_dict != None %}
@@ -76,6 +84,7 @@
     (vis_maps_json, 'visitation_maps'),
     (predictor_maps_json, 'predictor_maps'),
     (effect_size_chart_json, 'effect_size_chart'),
+    (correlation_plot_json, 'correlation_plot'),
   ] %}
   {{ embed_vega(chart_spec_id_list, regression_data_name) }}
 {% endblock scripts %}

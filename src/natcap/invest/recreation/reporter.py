@@ -121,7 +121,6 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             file_registry['regression_coefficients'])
 
         # Display table of regression coefficients & regression_summary.txt stats
-        # TODO: summary stats
         estimates_df = estimates_df.sort_values('predictor')
         effect_size_table = estimates_df.to_html(index=False)
         patterns = r'Residual standard error|Multiple R-squared|Adjusted R-squared|SSres'
@@ -199,12 +198,9 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             xy_ratio, len(predictor_maps), small_plots=False)
 
         predictor_maps_chart = altair.vconcat(
-            altair.hconcat(*predictor_maps[:n_cols]).resolve_scale(
-                fill='independent'
-            ),
-            altair.hconcat(*predictor_maps[n_cols:]).resolve_scale(
-                fill='independent'
-            )
+            *[altair.hconcat(
+                *predictor_maps[x:x + n_cols]).resolve_scale(fill='independent')
+              for x in range(0, len(predictor_maps), n_cols)]
         ).resolve_scale(
             fill='independent'
         )
@@ -217,7 +213,21 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
         # Plot distributions of predictor and response variables
 
         # Scatterplot correllations between all variables
-        pass
+        variables = predictor_variables.to_list()
+        variables.append('avg_pr_UD')
+        correlation_plot = altair.Chart(regression_data).mark_circle().encode(
+            altair.X(altair.repeat("column"), type='quantitative'),
+            altair.Y(altair.repeat("row"), type='quantitative')
+        ).properties(
+            width=150,
+            height=150
+        ).repeat(
+            row=variables,
+            column=list(reversed(variables))
+        )
+        correlation_plot_dict = correlation_plot.to_dict()
+        correlation_plot_dict['datasets'][regression_data_name] = []
+        correlation_plot_json = json.dumps(correlation_plot_dict)
 
     with open(target_html_filepath, 'w', encoding='utf-8') as target_file:
         target_file.write(TEMPLATE.render(
@@ -240,6 +250,7 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             effect_size_chart_json=effect_size_chart_json,
             effect_size_table=effect_size_table,
             regression_summary_html=regression_summary_html,
+            correlation_plot_json=correlation_plot_json
         ))
 
     LOGGER.info(f'Created {target_html_filepath}')
