@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import time
 
 import altair
@@ -120,7 +121,16 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             file_registry['regression_coefficients'])
 
         # Display table of regression coefficients & regression_summary.txt stats
+        # TODO: summary stats
+        estimates_df = estimates_df.sort_values('predictor')
         effect_size_table = estimates_df.to_html(index=False)
+        patterns = r'Residual standard error|Multiple R-squared|Adjusted R-squared|SSres'
+        with open(file_registry['regression_summary']) as summary_file:
+            summary_lines = ''
+            for line in summary_file.readlines():
+                if re.findall(patterns, line):
+                    summary_lines += line
+        regression_summary_html = f'<pre>{summary_lines}</pre>'
 
         # Plot effect sizes of predictors
         def plot_effect_sizes(dataframe):
@@ -229,6 +239,7 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             regression_data_json=regression_data_json,
             effect_size_chart_json=effect_size_chart_json,
             effect_size_table=effect_size_table,
+            regression_summary_html=regression_summary_html,
         ))
 
     LOGGER.info(f'Created {target_html_filepath}')

@@ -33,10 +33,10 @@
   )}}
 
   {{ accordion_section(
-    'Predictor effect sizes',
+    'Regression Summary and Predictor Effect Sizes',
     content_grid([
       ('<div id="effect_size_chart" class="loading"></div>', 50),
-      (effect_size_table | safe, 50),
+      ((effect_size_table + regression_summary_html), 50),
       (caption(predictor_maps_caption, definition_list=True), 100)
     ])
   )}}
