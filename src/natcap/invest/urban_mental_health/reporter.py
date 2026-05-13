@@ -4,19 +4,13 @@ import time
 import altair
 import geopandas
 import geometamaker
-import matplotlib
-import numpy
 import pandas
-import pygeoprocessing
-from pydantic import ConfigDict
-from pydantic.dataclasses import dataclass
-from osgeo import gdal
 
 from natcap.invest import __version__
 from natcap.invest import gettext
 from natcap.invest.reports import jinja_env, raster_utils, report_constants, \
     vector_utils
-from natcap.invest.spec import ModelSpec, FileRegistry
+from natcap.invest.spec import ModelSpec
 
 from natcap.invest.reports.raster_utils import RasterDatatype, \
     RasterPlotConfig, RasterTransform, SpecialValueConfig

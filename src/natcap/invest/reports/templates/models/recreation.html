@@ -13,41 +13,70 @@
   {% from 'caption.html' import caption %}
   {% from 'content-grid.html' import content_grid %}
   {% from 'metadata.html' import list_metadata %}
+  {% from 'wide-table.html' import wide_table %}
 
   <h2 class="section-header">Results</h2>
 
-  {{ accordion_section(
-    'Visitation Maps',
-    content_grid([
-      ('<div id="visitation_maps" class="loading"></div>', 100),
-      (caption(visitation_maps_caption, definition_list=True), 100)
-    ])
-  )}}
+  {% if userdays_vector_table != None %}
+    {{ accordion_section(
+      'Visitation Table',
+      wide_table(
+        userdays_vector_table | safe,
+        font_size_px=15
+      )
+    )}}
+  {% endif %}
 
-  {{ accordion_section(
-    'Predictor Maps',
-    content_grid([
-      ('<div id="predictor_maps" class="loading"></div>', 100),
-      (caption(predictor_maps_caption, definition_list=True), 100)
-    ])
-  )}}
+  {% if visitation_maps_json != None %}
+    {{ accordion_section(
+      'Visitation Maps',
+      content_grid([
+        ('<div id="visitation_maps" class="loading"></div>', 100),
+        (caption(visitation_maps_caption, definition_list=True), 100)
+      ])
+    )}}
+  {% endif %}
 
-  {{ accordion_section(
-    'Regression Summary and Predictor Effect Sizes',
-    content_grid([
-      ('<div id="effect_size_chart" class="loading"></div>', 50),
-      ((effect_size_table + regression_summary_html), 50),
-      (caption(predictor_maps_caption, definition_list=True), 100)
-    ])
-  )}}
+  {% if predictor_maps_json != None %}
+    {{ accordion_section(
+      'Predictor Maps',
+      content_grid([
+        ('<div id="predictor_maps" class="loading"></div>', 100),
+        (caption(predictor_maps_caption, definition_list=True), 100)
+      ])
+    )}}
+  {% endif %}
 
-  {{ accordion_section(
-    'Correlations Between Predictors and Response Variable',
-    content_grid([
-      ('<div id="correlation_plot" class="loading"></div>', 100),
-      (caption(predictor_maps_caption, definition_list=True), 100)
-    ])
-  )}}
+  {% if effect_size_table != None %}
+    {{ accordion_section(
+      'Regression Summary and Predictor Effect Sizes',
+      content_grid([
+        ('<div id="effect_size_chart" class="loading"></div>', 50),
+        ((effect_size_table + regression_summary_html), 50),
+        (caption(predictor_maps_caption, definition_list=True), 100)
+      ])
+    )}}
+  {% endif %}
+
+  {% if correlation_plot_json != None %}
+    {{ accordion_section(
+      'Pairwise Correlations Between Predictors',
+      content_grid([
+        ('<div id="correlation_plot" class="loading"></div>', 100),
+        (caption(predictor_maps_caption, definition_list=True), 100)
+      ])
+    )}}
+  {% endif %}
+
+  {% if response_correlation_json != None %}
+    {{ accordion_section(
+      'Correlations Between Predictors and Response Variable',
+      content_grid([
+        ('<div id="response_correlation_plot" class="loading"></div>', 100),
+        (caption(predictor_maps_caption, definition_list=True), 100)
+      ])
+    )}}
+  {% endif %}
 
   <h2 class="section-header">Inputs</h2>
 
@@ -79,12 +108,14 @@
   <script>
     var vegaData = {{ regression_data_json | safe }};
   </script>
+  {% include 'datatable-js.html' %}
   {% include 'vega-embed-js.html' %}
   {% set chart_spec_id_list = [
-    (vis_maps_json, 'visitation_maps'),
+    (visitation_maps_json, 'visitation_maps'),
     (predictor_maps_json, 'predictor_maps'),
     (effect_size_chart_json, 'effect_size_chart'),
     (correlation_plot_json, 'correlation_plot'),
+    (response_correlation_json, 'response_correlation_plot'),
   ] %}
   {{ embed_vega(chart_spec_id_list, regression_data_name) }}
 {% endblock scripts %}
