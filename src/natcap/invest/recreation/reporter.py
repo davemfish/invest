@@ -190,8 +190,9 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
         userdays_vector = regression_data.join(
             aoi_df.set_index('poly_id'), on='poly_id', rsuffix='_aoi')
         userdays_vector.drop(columns=['geometry'], inplace=True)
-        # TODO need pagination and possibly default visible columns for datatable
-        userdays_vector_table = userdays_vector.to_html(classes='datatable')
+        userdays_vector_table = userdays_vector.to_html(
+            index=False,
+            classes=['datatable', 'paginate'])
 
     if 'regression_coefficients' in file_registry:
         estimates_df = pandas.read_csv(
