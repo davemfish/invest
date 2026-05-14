@@ -373,7 +373,10 @@ MODEL_SPEC = spec.ModelSpec(
         spec.CSVOutput(
             id="regression_coefficients",
             path="regression_coefficients.csv",
-            about=gettext("Regression coefficients table")
+            about=gettext(
+                "A table that includes the estimates, standard-error,"
+                " and t-value for each predictor variable in the regression."
+            )
         ),
         spec.VectorOutput(
             id="scenario_results",

@@ -20,10 +20,10 @@
   {% if userdays_vector_table != None %}
     {{ accordion_section(
       'Visitation Table',
-      wide_table(
-        userdays_vector_table | safe,
-        font_size_px=14
-      )
+      content_grid([
+        (wide_table(userdays_vector_table | safe, font_size_px=14), 100),
+        (caption(visitation_variables_caption, definition_list=True), 100)
+      ])
     )}}
   {% endif %}
 
@@ -32,7 +32,7 @@
       'Visitation Maps',
       content_grid([
         ('<div id="visitation_maps" class="loading"></div>', 100),
-        (caption(visitation_maps_caption, definition_list=True), 100)
+        (caption(visitation_variables_caption, definition_list=True), 100)
       ])
     )}}
   {% endif %}
@@ -42,7 +42,17 @@
       'Predictor Maps',
       content_grid([
         ('<div id="predictor_maps" class="loading"></div>', 100),
-        (caption(predictor_maps_caption, definition_list=True), 100)
+        (caption(predictor_maps_caption), 100)
+      ])
+    )}}
+  {% endif %}
+
+  {% if scenario_predictor_maps_json != None %}
+    {{ accordion_section(
+      'Scenario Predictor Maps',
+      content_grid([
+        ('<div id="scenario_predictor_maps" class="loading"></div>', 100),
+        (caption(scenario_predictor_maps_caption), 100)
       ])
     )}}
   {% endif %}
@@ -53,7 +63,7 @@
       content_grid([
         ('<div id="effect_size_chart" class="loading"></div>', 50),
         ((effect_size_table + regression_summary_html), 50),
-        (caption(predictor_maps_caption, definition_list=True), 100)
+        (caption(regression_summary_caption), 100)
       ])
     )}}
   {% endif %}
@@ -63,7 +73,7 @@
       'Pairwise Correlations Between Predictors',
       content_grid([
         ('<div id="correlation_plot" class="loading"></div>', 100),
-        (caption(predictor_maps_caption, definition_list=True), 100)
+        (caption(correlation_plot_caption), 100)
       ])
     )}}
   {% endif %}
@@ -73,7 +83,7 @@
       'Correlations Between Predictors and Response Variable',
       content_grid([
         ('<div id="response_correlation_plot" class="loading"></div>', 100),
-        (caption(predictor_maps_caption, definition_list=True), 100)
+        (caption(response_correlation_caption), 100)
       ])
     )}}
   {% endif %}
@@ -113,6 +123,7 @@
   {% set chart_spec_id_list = [
     (visitation_maps_json, 'visitation_maps'),
     (predictor_maps_json, 'predictor_maps'),
+    (scenario_predictor_maps_json, 'scenario_predictor_maps'),
     (effect_size_chart_json, 'effect_size_chart'),
     (correlation_plot_json, 'correlation_plot'),
     (response_correlation_json, 'response_correlation_plot'),

@@ -20,16 +20,28 @@ LOGGER = logging.getLogger(__name__)
 
 TEMPLATE = jinja_env.get_template('models/recreation.html')
 
+VEGA_DATA_CONTAINER = {
+    'json': None,
+    'name': None
+}
 
-def _strip_data_from_chart_spec(chart, return_data=False):
+LOGIT_VAR_NAME = 'logit_avg_pr_UD'
+
+
+def _get_xy_ratio(geodataframe):
+    xmin, ymin, xmax, ymax = geodataframe.total_bounds
+    return (xmax - xmin) / (ymax - ymin)
+
+
+def _strip_data_from_chart_spec(chart):
     chart_dict = chart.to_dict()
     default_name = list(chart_dict['datasets'])[0]
-    if return_data:
-        data_json = json.dumps(chart_dict['datasets'][default_name])
+    if VEGA_DATA_CONTAINER['json'] is None:
+        VEGA_DATA_CONTAINER['json'] = json.dumps(
+            chart_dict['datasets'][default_name])
+        VEGA_DATA_CONTAINER['name'] = default_name
     del chart_dict['datasets'][default_name]
     chart_json = json.dumps(chart_dict)
-    if return_data:
-        return chart_json, data_json, default_name
     return chart_json
 
 
@@ -57,6 +69,45 @@ def plot_visitation_map(geodataframe, variable):
         ),
     )
     return chart
+
+
+def plot_predictor_maps(geodataframe, variables):
+    predictor_maps = []
+    for variable in variables:
+        chart = altair.Chart(geodataframe).mark_geoshape(
+            stroke="gray",
+            strokeWidth=0.5,
+        ).project(
+            type='identity',
+            reflectY=True
+        ).encode(
+            fill=altair.condition(
+                altair.datum[variable] > 0,
+                altair.Fill(
+                    variable,
+                    type='quantitative',
+                    scale=altair.Scale(
+                        scheme='viridis',
+                        # type='log',
+                        # domainMin=min_val,  # must exclude 0s if using log
+                    )
+                ),
+                altair.value('white')
+            ),
+        )
+        predictor_maps.append(chart)
+
+    xy_ratio = _get_xy_ratio(geodataframe)
+    n_rows, n_cols = raster_utils._choose_n_rows_n_cols(
+        xy_ratio, len(predictor_maps), small_plots=False)
+    predictor_maps_chart = altair.vconcat(
+        *[altair.hconcat(
+            *predictor_maps[x:x + n_cols]).resolve_scale(fill='independent')
+          for x in range(0, len(predictor_maps), n_cols)]
+    ).resolve_scale(
+        fill='independent'
+    )
+    return predictor_maps_chart
 
 
 def plot_effect_sizes(dataframe):
@@ -107,37 +158,68 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
     Returns:
         ``None``
     """
+    userdays_vector_table = None
+    vis_maps_json = None
+    visitation_variables_caption = []
+    predictor_maps_json = None
+    predictor_maps_caption = gettext(
+        'Maps of predictor variables aggregated to AOI polygons.')
+    regression_summary_html = None
+    effect_size_table = None
+    effect_size_chart_json = None
+    correlation_plot_json = None
+    response_correlation_json = None
+    scenario_predictor_maps_json = None
+    # userdays_vector_table_caption = ''
+    scenario_predictor_maps_caption = gettext(
+        'Scenario maps of predictor variables aggregated to AOI polygons.')
+    regression_summary_caption = gettext(
+        """The effect of predictor variables on visitation rates (avg_PR_UD)
+        is represented by the coefficient estimate. Estimates are plotted as
+        circles with their standard-error represented by horizontal lines.
+        The t-value measures how many standard errors the estimate is away
+        from zero.
+        """
+    )
+    correlation_plot_caption = gettext(
+        """Scatterplots show the correlation between each pair of predictors.
+        If predictors are correlated with one another, it can be hard to
+        distinguish the individual effect of one predictor on the response
+        variable; the coefficient estimates may be unreliable.
+        """)
+    response_correlation_caption = gettext(
+        """Scatterplots show the correlation between each predictor variable
+        and the response variable (avg_PR_UD).
+        """) + model_spec.get_output('regression_data').get_field('avg_pr_UD').about
+
     regression_data = geopandas.read_file(file_registry['regression_data'])
     visitation_variables = ['pr_PUD', 'pr_TUD', 'avg_pr_UD']
+    for var in visitation_variables:
+        visitation_variables_caption.append(
+            f"{var}: {model_spec.get_output(
+                'regression_data').get_field(var).about}")
     # Most maps and plots can share the same dataset based on the features
     # in 'regression_data'. Join a few other variables to that dataframe
     # so that all altair charts can share a reference to the same dataset.
     if 'regression_coefficients' in file_registry:
         # Calculate the logit-transformed response variable because that same
         # transformation was used by the regression model
-        var_name = 'logit_avg_pr_UD'
-        regression_data[var_name] = regression_data['avg_pr_UD'].copy()
+        regression_data[LOGIT_VAR_NAME] = regression_data['avg_pr_UD'].copy()
         epsilon = 0
         if (regression_data['avg_pr_UD'] == 0).any():
             epsilon = regression_data['avg_pr_UD'][regression_data['avg_pr_UD'] > 0].min() / 2
-            regression_data.loc[regression_data['avg_pr_UD'] == 0, var_name] = epsilon
-        regression_data[var_name] = numpy.log(regression_data[var_name] / (1 - regression_data[var_name]))
+            regression_data.loc[regression_data['avg_pr_UD'] == 0, LOGIT_VAR_NAME] = epsilon
+        regression_data[LOGIT_VAR_NAME] = numpy.log(
+            regression_data[LOGIT_VAR_NAME] / (1 - regression_data[LOGIT_VAR_NAME]))
     if 'scenario_results' in file_registry:
         # Join tables so that all vegalite specifications can share the dataset
         scenario_data = geopandas.read_file(file_registry['scenario_results'])
-        regression_data['pr_UD_EST'] = scenario_data['pr_UD_EST']
-        visitation_variables.append('pr_UD_EST')
-
-    userdays_vector_table = None
-    vis_maps_json = regression_data_json = regression_data_name = None
-    visitation_maps_caption = None
-    predictor_maps_json = None
-    predictor_maps_caption = None
-    regression_summary_html = None
-    effect_size_table = None
-    effect_size_chart_json = None
-    correlation_plot_json = None
-    response_correlation_json = None
+        var_name = 'pr_UD_EST'
+        regression_data[var_name] = scenario_data[var_name]
+        visitation_variables.append(var_name)
+        visitation_variables_caption.append(
+            f"{var_name}: {model_spec.get_output(
+                'scenario_results').get_field(var_name).about}")
 
     if args_dict['grid_aoi']:
         # Plot PUD, TUD, and combined results as choropleths.
@@ -150,8 +232,8 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
         # Plotting points instead of polygons is significantly cheaper, 1 vertex instead
         # of 5 or 7, and all the 0s could be omitted, maybe.
 
-        xmin, ymin, xmax, ymax = regression_data.total_bounds
-        xy_ratio = (xmax - xmin) / (ymax - ymin)
+        # TODO: does this layout need to be custom? Or can it use choose_nrows etc?
+        xy_ratio = _get_xy_ratio(regression_data)
         if raster_utils._extra_wide_aoi(xy_ratio):
             vis_maps_chart = altair.vconcat(*vis_charts)
         else:
@@ -172,19 +254,14 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
         vis_maps_chart = vis_maps_chart.resolve_scale(
             fill='independent'
         )
+        vis_maps_json = _strip_data_from_chart_spec(
+            vis_maps_chart)
 
-        # One call to this function needs to return the data and the dataset name.
-        # Subsequent charts based on the same dataframe will re-use the json data
-        vis_maps_json, regression_data_json, regression_data_name = _strip_data_from_chart_spec(
-            vis_maps_chart, return_data=True)
-
-        visitation_maps_caption = 'a caption'
     else:
         # If the AOI was not gridded, then a table view is probably more
         # meaningful than a map view. And the map is unlikely to be legible
-        # at a fixed scale because features are irregular shapes
-
-        # The AOIs original columns are probably meaningful, so join them
+        # at a fixed scale because features are irregular shapes and sizes.
+        # The AOIs original columns are probably meaningful, so join them.
         aoi_df = geopandas.read_file(file_registry['aoi'])
         aoi_df.drop(columns=['geometry'], inplace=True)
         userdays_vector = regression_data.join(
@@ -213,48 +290,26 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
         effect_size_chart = plot_effect_sizes(estimates_df)
         effect_size_chart_json = effect_size_chart.to_json()
 
+        predictor_variables = estimates_df['predictor']
+        predictor_variables = predictor_variables[predictor_variables != '(Intercept)']
+
         if args_dict['grid_aoi']:
             # Plot maps of aggregated predictors
-            predictor_variables = estimates_df['predictor']
-            predictor_variables = predictor_variables[predictor_variables != '(Intercept)']
-            predictor_maps = []
-            for variable in predictor_variables:
-                chart = altair.Chart(regression_data).mark_geoshape(
-                    stroke="gray",
-                    strokeWidth=0.5,
-                ).project(
-                    type='identity',
-                    reflectY=True
-                ).encode(
-                    fill=altair.condition(
-                        altair.datum[variable] > 0,
-                        altair.Fill(
-                            variable,
-                            type='quantitative',
-                            scale=altair.Scale(
-                                scheme='viridis',
-                                # type='log',
-                                # domainMin=min_val,  # must exclude 0s if using log
-                            )
-                        ),
-                        altair.value('white')
-                    ),
-                )
-                predictor_maps.append(chart)
-
-            n_rows, n_cols = raster_utils._choose_n_rows_n_cols(
-                xy_ratio, len(predictor_maps), small_plots=False)
-            predictor_maps_chart = altair.vconcat(
-                *[altair.hconcat(
-                    *predictor_maps[x:x + n_cols]).resolve_scale(fill='independent')
-                  for x in range(0, len(predictor_maps), n_cols)]
-            ).resolve_scale(
-                fill='independent'
-            )
-            predictor_maps_json = _strip_data_from_chart_spec(predictor_maps_chart)
+            predictor_maps_chart = plot_predictor_maps(
+                regression_data, predictor_variables)    
+            predictor_maps_json = _strip_data_from_chart_spec(
+                predictor_maps_chart)
             predictor_maps_caption = 'a caption'
 
-        # Plot maps of aggregated predictors under the scenario
+            # Plot maps of aggregated predictors under the scenario
+            if 'scenario_results' in file_registry:
+                scenario_predictor_maps_chart = plot_predictor_maps(
+                    scenario_data, predictor_variables)    
+                # This chart will not share the same source data as others
+                # because the scenario_data predictors have the same name as
+                # regression_data predictors so joining the tables would be
+                # problematic.
+                scenario_predictor_maps_json = scenario_predictor_maps_chart.to_json()
 
         # Pairwise correlations between all variables
         variables = predictor_variables.to_list()
@@ -281,8 +336,9 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
         n_cols = min(4, n_plots)  # max 4 columns
         param_name = 'logit'
         transform_checkbox = altair.binding_checkbox(
-            name=param_name)
-        logit_transform = altair.param(value=False, bind=transform_checkbox, name=param_name)
+            name='logit-transformed avg_pr_UD')
+        logit_transform = altair.param(
+            value=False, bind=transform_checkbox, name=param_name)
         scatterplots = []
         for var in variables:
             scatterplots.append(altair.Chart(regression_data).mark_point(
@@ -292,7 +348,7 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
                 x=altair.X(var, type='quantitative'),
                 y=altair.Y('y_value:Q', title='avg_pr_UD')
             ).transform_calculate(
-                y_value=f'{param_name} ? datum.{var_name} : datum.avg_pr_UD'
+                y_value=f'{param_name} ? datum.{LOGIT_VAR_NAME} : datum.avg_pr_UD'
             ).properties(
                 width=175,
                 height=175
@@ -325,17 +381,23 @@ def report(file_registry: dict, args_dict: dict, model_spec: ModelSpec,
             args_dict=args_dict,
             model_spec_outputs=model_spec.outputs,
             userdays_vector_table=userdays_vector_table,
+            # userdays_vector_table_caption=userdays_vector_table_caption,
             visitation_maps_json=vis_maps_json,
-            visitation_maps_caption=visitation_maps_caption,
+            visitation_variables_caption=visitation_variables_caption,
             predictor_maps_json=predictor_maps_json,
             predictor_maps_caption=predictor_maps_caption,
-            regression_data_name=regression_data_name,
-            regression_data_json=regression_data_json,
+            scenario_predictor_maps_json=scenario_predictor_maps_json,
+            scenario_predictor_maps_caption=scenario_predictor_maps_caption,
+            regression_data_name=VEGA_DATA_CONTAINER['name'],
+            regression_data_json=VEGA_DATA_CONTAINER['json'],
             effect_size_chart_json=effect_size_chart_json,
             effect_size_table=effect_size_table,
             regression_summary_html=regression_summary_html,
+            regression_summary_caption=regression_summary_caption,
             correlation_plot_json=correlation_plot_json,
-            response_correlation_json=response_correlation_json
+            correlation_plot_caption=correlation_plot_caption,
+            response_correlation_json=response_correlation_json,
+            response_correlation_caption=response_correlation_caption
         ))
 
     LOGGER.info(f'Created {target_html_filepath}')
@@ -348,16 +410,18 @@ if __name__ == '__main__':
     from natcap.invest.recreation import MODEL_SPEC
     from natcap.invest import datastack
 
-    # file_registry_path = 'C:/Users/dmf/projects/forum/rec/sampledata_319/file_registry.json'
-    # param_set = datastack.extract_parameters_from_logfile(
-    #     'C:/Users/dmf/projects/forum/rec/sampledata_319/InVEST-recreation-log-2026-04-15--16_54_59.txt')
-    file_registry_path = 'C:/Users/dmf/projects/forum/rec/mn_lakes/large_lakes/results/file_registry.json'
+    file_registry_path = 'C:/Users/dmf/projects/forum/rec/sampledata_319/file_registry.json'
     param_set = datastack.extract_parameters_from_logfile(
-        'C:/Users/dmf/projects/forum/rec/mn_lakes/large_lakes/results/InVEST-recreation-log-2026-05-06--08_53_13.txt')
+        'C:/Users/dmf/projects/forum/rec/sampledata_319/InVEST-recreation-log-2026-04-15--16_54_59.txt')
+    # file_registry_path = 'C:/Users/dmf/projects/forum/rec/mn_lakes/large_lakes/results/file_registry.json'
+    # param_set = datastack.extract_parameters_from_logfile(
+    #     'C:/Users/dmf/projects/forum/rec/mn_lakes/large_lakes/results/InVEST-recreation-log-2026-05-06--08_53_13.txt')
 
+    args_dict = param_set.args
+    # args_dict['grid_aoi'] = False
     with open(file_registry_path) as registry_file:
         file_registry = json.load(registry_file)
 
     theme = 'carbonwhite'
     with altair.theme.enable(theme):
-        report(file_registry, param_set.args, MODEL_SPEC, f'recreation_report_{theme}_no_grid.html')
+        report(file_registry, args_dict, MODEL_SPEC, f'recreation_report_{theme}.html')
