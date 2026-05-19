@@ -1,8 +1,6 @@
 LEGEND_CONFIG = {
     'labelFontSize': 14,
     'titleFontSize': 14,
-    'orient': 'left',
-    'gradientLength': 120
 }
 AXIS_CONFIG = {
     'labelFontSize': 12,
