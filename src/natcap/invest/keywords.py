@@ -33,6 +33,10 @@ class GCMDKeyword(Keyword):
     full_path: str
     """The full hierarchy of the keyword within the GCMD."""
     vocabulary: str = 'Global Change Master Directory (GCMD) Keywords'
+    vocabulary_url: str = 'https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords'
+
+    def __post_init__(self):
+        self.url = f'https://cmr.earthdata.nasa.gov/kms/concept/{self.uuid}'
 
 
 class InvestKeyword(Keyword):
