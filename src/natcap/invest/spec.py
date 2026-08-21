@@ -262,7 +262,7 @@ class IOModel(ImmutableBaseModel):
 
         Args:
             datasource_path (str): filepath to the data to describe
-            keywords_list (list[str]): sequence of keywords
+            keywords_list (list[str]): keywords pertaining to the invest model
             lineage_statement (str): (optional) string to describe origin of
                 the dataset
             out_workspace (str): (optional) where to write metadata if different
@@ -278,9 +278,10 @@ class IOModel(ImmutableBaseModel):
             LOGGER.debug(f"Skipping metadata creation for {datasource_path}: {e}")
             return None
         resource.set_lineage(lineage_statement)
-        # a pre-existing metadata doc could have keywords
-        words = resource.get_keywords()
-        resource.set_keywords(set(words + keywords_list))
+        words = resource.get_keywords()  # pre-existing metadata can have keywords
+        words.extend(self.keywords)
+        words.extend(keywords_list)
+        resource.set_keywords(set(words))
         self.configure_metadata(resource)
         resource.write(workspace=out_workspace)
 
@@ -2527,6 +2528,17 @@ class ModelSpec(ImmutableBaseModel):
 
         for key, value in file_registry.items():
             _generate_metadata(key, value)
+
+    def generate_metadata_for_inputs(self, args_dict):
+        for _input in self.inputs:
+            if isinstance(_input, FileInput) and args_dict[_input.id]:
+                _input.write_metadata_file(args_dict[_input.id])
+
+        # for key, value in args_dict.items():
+        #     if value:
+        #         _input = self.get_input(key)
+        #         if isinstance(_input, FileInput):
+        #             _input.write_metadata_file(value)
 
     def create_output_directories(self, args):
         """Create the necessary output directories given a set of args.
