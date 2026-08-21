@@ -29,39 +29,6 @@ class SaveAsModal extends React.Component {
     this.browseSaveFile = this.browseSaveFile.bind(this);
   }
 
-  async browseSaveFile(event) {
-    const {
-      modelID,
-      saveJsonFile,
-      saveDatastack,
-      savePythonScript
-    } = this.props;
-    const { datastackType, relativePaths } = this.state;
-    const defaultTargetPaths = {
-      json: `invest_${modelID}_args.json`,
-      tgz: `invest_${modelID}_datastack.tgz`,
-      py: `execute_invest_${modelID}.py`,
-    };
-
-    const data = await ipcRenderer.invoke(
-      ipcMainChannels.SHOW_SAVE_DIALOG,
-      { defaultPath: defaultTargetPaths[datastackType] }
-    );
-    if (data.filePath) {
-      switch (datastackType) {
-        case "json":
-          saveJsonFile(data.filePath, relativePaths);
-          break;
-        case "tgz":
-          saveDatastack(data.filePath);
-          break;
-        case "py":
-          savePythonScript(data.filePath);
-      }
-    }
-    this.handleClose();
-  }
-
   handleClose() {
     this.setState({ show: false });
   }
@@ -85,6 +52,44 @@ class SaveAsModal extends React.Component {
     const newState = { ...this.state };
     newState.relativePaths = event.target.checked;
     this.setState(newState);
+  }
+
+  async browseSaveFile(event) {
+    const {
+      modelID,
+      saveJsonFile,
+      saveDatastack,
+      savePythonScript,
+      exportMetadata,
+    } = this.props;
+    const { datastackType, relativePaths } = this.state;
+    const defaultTargetPaths = {
+      json: `invest_${modelID}_args.json`,
+      tgz: `invest_${modelID}_datastack.tgz`,
+      py: `execute_invest_${modelID}.py`,
+    };
+
+    if (datastackType === 'metadata') {
+      exportMetadata();
+    } else {
+      const data = await ipcRenderer.invoke(
+        ipcMainChannels.SHOW_SAVE_DIALOG,
+        { defaultPath: defaultTargetPaths[datastackType] }
+      );
+      if (data.filePath) {
+        switch (datastackType) {
+          case 'json':
+            saveJsonFile(data.filePath, relativePaths);
+            break;
+          case 'tgz':
+            saveDatastack(data.filePath);
+            break;
+          case 'py':
+            savePythonScript(data.filePath);
+        }
+      }
+    }
+    this.handleClose();
   }
 
   render() {
@@ -124,26 +129,26 @@ class SaveAsModal extends React.Component {
                   <Form.Check.Input
                     type="radio"
                     value="json"
-                    checked={datastackType === "json"}
+                    checked={datastackType === 'json'}
                     name="datastackType"
                     id="datastackType-json"
                     className="text-start"
                     variant="light"
                     onChange={this.handleChange}
                   />
-                    <span className="ms-2">Parameters only</span>
-                    <Form.Text>
-                      {t('Save your parameters in a JSON file. This includes the ' +
-                        'paths to your input data, but not the data itself. ' +
-                        'Open this file in InVEST to restore your parameters.')}
-                    </Form.Text>
-                    <Form.Check
-                      id="relativePaths"
-                      label="Use relative paths"
-                      name="relativePaths"
-                      disabled={datastackType !== "json"}
-                      onChange={this.handleRelativePathsCheckbox}
-                    />
+                  <span className="ms-2">Parameters only</span>
+                  <Form.Text>
+                    {t('Save your parameters in a JSON file. This includes the ' +
+                      'paths to your input data, but not the data itself. ' +
+                      'Open this file in InVEST to restore your parameters.')}
+                  </Form.Text>
+                  <Form.Check
+                    id="relativePaths"
+                    label="Use relative paths"
+                    name="relativePaths"
+                    disabled={datastackType !== 'json'}
+                    onChange={this.handleRelativePathsCheckbox}
+                  />
                 </Form.Check.Label>
               </Form.Check>
               <Form.Check className="save-as-option">
@@ -151,7 +156,7 @@ class SaveAsModal extends React.Component {
                   <Form.Check.Input
                     type="radio"
                     value="tgz"
-                    checked={datastackType === "tgz"}
+                    checked={datastackType === 'tgz'}
                     name="datastackType"
                     id="datastackType-tgz"
                     className="text-start"
@@ -173,7 +178,7 @@ class SaveAsModal extends React.Component {
                   <Form.Check.Input
                     type="radio"
                     value="py"
-                    checked={datastackType === "py"}
+                    checked={datastackType === 'py'}
                     name="datastackType"
                     id="datastackType-py"
                     className="text-start"
@@ -186,6 +191,29 @@ class SaveAsModal extends React.Component {
                       'paths to your input data, but not the data itself. Running ' +
                       'the python script will programmatically run the model with ' +
                       'your parameters. Use this as a starting point for batch scripts.')}
+                  </Form.Text>
+                </Form.Check.Label>
+              </Form.Check>
+              <Form.Check className="save-as-option">
+                <Form.Check.Label>
+                  <Form.Check.Input
+                    type="radio"
+                    value="metadata"
+                    checked={datastackType === 'metadata'}
+                    name="datastackType"
+                    id="datastackType-metadata"
+                    className="text-start"
+                    variant="light"
+                    onChange={this.handleChange}
+                  />
+                  <span className="ms-2">Metadata</span>
+                  <Form.Text>
+                    {t(`Save a metadata file for each dataset in the input parameters.
+                        Metadata files are .yml files generated by GeoMetaMaker
+                        and include descriptions and keywords associated with
+                        the model’s input data specifications. Metadata for
+                        model outputs are automatically generated when running
+                        the model.`)}
                   </Form.Text>
                 </Form.Check.Label>
               </Form.Check>

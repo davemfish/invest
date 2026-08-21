@@ -132,9 +132,9 @@ FERTILIZERS = GCMDKeyword(
     uuid='18a8197e-3a3f-408c-9c51-e9fe89dd6b45',
     full_path='EARTH SCIENCE > AGRICULTURE > AGRICULTURAL CHEMICALS > FERTILIZERS')
 
-FLOOD_DAMAGE_name = InvestKeyword(
-    name='FLOOD DAMAGE name',
-    definition='The economic name of flood damage to a property.')
+FLOOD_DAMAGE_VALUE = InvestKeyword(
+    name='FLOOD DAMAGE VALUE',
+    definition='The economic value of flood damage to a property.')
 
 FLOOR_AREA_RATIO = InvestKeyword(
     name='FLOOR AREA RATIO',

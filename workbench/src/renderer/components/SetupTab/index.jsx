@@ -21,7 +21,8 @@ import {
   fetchArgsEnabled,
   getDynamicDropdowns,
   saveToPython,
-  writeParametersToFile
+  writeParametersToFile,
+  writeMetadataFiles,
 } from '../../server_requests';
 import { argsDictFromObject, openDatastack } from '../../utils';
 import { ipcMainChannels } from '../../../main/ipcMainChannels';
@@ -102,6 +103,7 @@ class SetupTab extends React.Component {
     this.saveDatastack = this.saveDatastack.bind(this);
     this.savePythonScript = this.savePythonScript.bind(this);
     this.saveJsonFile = this.saveJsonFile.bind(this);
+    this.exportMetadata = this.exportMetadata.bind(this);
     this.setSaveAlert = this.setSaveAlert.bind(this);
     this.removeSaveErrors = this.removeSaveErrors.bind(this);
     this.wrapInvestExecute = this.wrapInvestExecute.bind(this);
@@ -227,6 +229,19 @@ class SetupTab extends React.Component {
     this.setSaveAlert(message, error, key);
   }
 
+  async exportMetadata() {
+    const { modelID } = this.props;
+    const args = argsDictFromObject(this.state.argsValues);
+    const payload = {
+      model_id: modelID,
+      args: JSON.stringify(args),
+    };
+    const key = window.crypto.getRandomValues(new Uint16Array(1))[0].toString();
+    this.setSaveAlert('generating metadata...', false, key);
+    const { message, error } = await writeMetadataFiles(payload);
+    this.setSaveAlert(message, error, key);
+  }
+
   /** State updater for alert messages from various save buttons.
    *
    * @param {string} message - the message to display
@@ -268,7 +283,7 @@ class SetupTab extends React.Component {
   }
 
   async loadParametersFromFile(filepath) {
-    const { modelID, switchTabs, t, investList } = this.props;
+    const { modelID, switchTabs, t } = this.props;
     let datastack;
     try {
       datastack = await openDatastack(filepath);
@@ -631,6 +646,7 @@ class SetupTab extends React.Component {
               savePythonScript={this.savePythonScript}
               saveJsonFile={this.saveJsonFile}
               saveDatastack={this.saveDatastack}
+              exportMetadata={this.exportMetadata}
               removeSaveErrors={this.removeSaveErrors}
             />
             {SaveAlerts}

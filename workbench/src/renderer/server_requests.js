@@ -260,6 +260,36 @@ export async function writeParametersToFile(payload) {
 }
 
 /**
+ * Write GeoMetaMaker metdata files for model args.
+ *
+ * @param  {object} payload {
+ *   model_id: string (e.g. carbon)
+ *   args: JSON string of InVEST model args keys and values
+ * }
+ * @returns {Promise} resolves undefined
+ */
+export async function writeMetadataFiles(payload) {
+  const { port, id } = await getPortAndID(payload.model_id);
+  return (
+    window.fetch(`${HOSTNAME}:${port}/${PREFIX}/write_metadata_files`, {
+      method: 'post',
+      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then((response) => response.json())
+      .then(({ message, error }) => {
+        if (error) {
+          logger.error(message);
+        } else {
+          logger.debug(message);
+        }
+        return { message, error };
+      })
+      .catch((error) => logger.error(error.stack))
+  );
+}
+
+/**
  * Get the mapping of supported language codes to display names.
  *
  * @returns {Promise} resolves object

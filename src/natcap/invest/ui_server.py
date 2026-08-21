@@ -266,6 +266,38 @@ def build_datastack_archive():
     }
 
 
+@app.route(f'/{PREFIX}/write_metadata_files', methods=['POST'])
+def write_metadata_files():
+    """Writes metadata sidecar files for datasets in an args dict.
+
+    Body (JSON string):
+        model_id: string (e.g. carbon) the model id
+        args: JSON string of InVEST model args keys and values
+
+    Returns:
+        A dictionary with the following key/value pairs:
+        - message (string): for logging and/or rendering in the UI.
+        - error (boolean): True if an error occurred, otherwise False.
+    """
+    payload = request.get_json()
+    try:
+        target_module = models.model_id_to_pyname[payload['model_id']]
+        model_module = importlib.reload(
+            importlib.import_module(name=target_module))
+        model_spec = model_module.MODEL_SPEC
+        model_spec.generate_metadata_for_inputs(json.loads(payload['args']))
+    except Exception as message:
+        LOGGER.error(str(message))
+        return {
+            'message': str(message),
+            'error': True
+        }
+    return {
+        'message': 'metadata files created',
+        'error': False
+    }
+
+
 @app.route(f'/{PREFIX}/log_model_start', methods=['POST'])
 def log_model_start():
     payload = request.get_json()

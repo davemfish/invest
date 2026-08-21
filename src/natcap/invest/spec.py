@@ -249,7 +249,7 @@ class IOModel(ImmutableBaseModel):
         if self.about:
             resource.set_description(self.about)
 
-    def write_metadata_file(self, datasource_path, keywords_list,
+    def write_metadata_file(self, datasource_path, keywords_list=[],
                             lineage_statement='', out_workspace=None):
         """Write a metadata sidecar file for an invest dataset.
 
@@ -575,7 +575,6 @@ class FileInput(Input):
         shutil.copyfile(source_path, target_filepath)
         datastack.args[self.id] = target_filepath
         datastack.files_found[source_path] = target_filepath
-
 
 
 class SpatialFileInput(FileInput):
@@ -2532,6 +2531,7 @@ class ModelSpec(ImmutableBaseModel):
     def generate_metadata_for_inputs(self, args_dict):
         for _input in self.inputs:
             if isinstance(_input, FileInput) and args_dict[_input.id]:
+                LOGGER.debug(f'Writing metadata for {args_dict[_input.id]}')
                 _input.write_metadata_file(args_dict[_input.id])
 
         # for key, value in args_dict.items():
