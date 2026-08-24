@@ -274,6 +274,7 @@ class IOModel(ImmutableBaseModel):
         try:
             resource = geometamaker.describe(datasource_path, compute_stats=True)
         except ValueError as e:
+            # TODO: now that this is an IOModel method, can we ever get here?
             # Don't want function to fail bc can't create metadata due to invalid filetype
             LOGGER.debug(f"Skipping metadata creation for {datasource_path}: {e}")
             return None
@@ -281,7 +282,7 @@ class IOModel(ImmutableBaseModel):
         words = resource.get_keywords()  # pre-existing metadata can have keywords
         words.extend(self.keywords)
         words.extend(keywords_list)
-        resource.set_keywords(set(words))
+        resource.set_keywords(words)  # this setter removes duplicates
         self.configure_metadata(resource)
         resource.write(workspace=out_workspace)
         return resource.metadata_path
@@ -305,7 +306,7 @@ class Input(IOModel):
 
     Bad examples: ``PRECIPITATION``, ``kc_factor``, ``table of valuation parameters``
     """
-    keywords: typing.Union[list[natcap.invest.keywords.Keyword], None] = None
+    keywords: list[natcap.invest.keywords.Keyword] = []
     """A list of keywords from a controlled vocabulary.
 
     Keywords can be used to identify possible data sources that satisfy input
