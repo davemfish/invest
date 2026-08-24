@@ -268,7 +268,7 @@ class IOModel(ImmutableBaseModel):
             out_workspace (str): (optional) where to write metadata if different
                 from data location
         Returns:
-            None
+            str: the path of the metadata file that was written
 
         """
         try:
@@ -284,6 +284,7 @@ class IOModel(ImmutableBaseModel):
         resource.set_keywords(set(words))
         self.configure_metadata(resource)
         resource.write(workspace=out_workspace)
+        return resource.metadata_path
 
 
 class Input(IOModel):
@@ -2529,10 +2530,14 @@ class ModelSpec(ImmutableBaseModel):
             _generate_metadata(key, value)
 
     def generate_metadata_for_inputs(self, args_dict):
+        files_generated = []
         for _input in self.inputs:
             if isinstance(_input, FileInput) and args_dict[_input.id]:
                 LOGGER.debug(f'Writing metadata for {args_dict[_input.id]}')
-                _input.write_metadata_file(args_dict[_input.id])
+                filepath = _input.write_metadata_file(args_dict[_input.id])
+                if filepath:
+                    files_generated.append(filepath)
+        return files_generated
 
         # for key, value in args_dict.items():
         #     if value:

@@ -576,6 +576,7 @@ exceed 100% of window.*/
   }
   .alert {
     margin-top: 1rem;
+    white-space: pre-wrap;
   }
 }
 

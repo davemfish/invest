@@ -239,6 +239,7 @@ class SetupTab extends React.Component {
     const key = window.crypto.getRandomValues(new Uint16Array(1))[0].toString();
     this.setSaveAlert('generating metadata...', false, key);
     const { message, error } = await writeMetadataFiles(payload);
+    console.log(message)
     this.setSaveAlert(message, error, key);
   }
 

@@ -2,6 +2,7 @@
 import importlib
 import json
 import logging
+import traceback
 
 from flask import Flask
 from flask import request
@@ -285,15 +286,16 @@ def write_metadata_files():
         model_module = importlib.reload(
             importlib.import_module(name=target_module))
         model_spec = model_module.MODEL_SPEC
-        model_spec.generate_metadata_for_inputs(json.loads(payload['args']))
-    except Exception as message:
-        LOGGER.error(str(message))
+        files_generated = model_spec.generate_metadata_for_inputs(
+            json.loads(payload['args']))
+    except Exception as exc:
+        LOGGER.exception(exc)
         return {
-            'message': str(message),
+            'message': traceback.format_exc(),
             'error': True
         }
     return {
-        'message': 'metadata files created',
+        'message': f'metadata files created:\n{"\n".join(files_generated)}',
         'error': False
     }
 
