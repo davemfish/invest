@@ -200,10 +200,10 @@ def write_parameter_set_file():
     try:
         datastack.build_parameter_set(
             args, model_id, filepath, relative=relative_paths)
-    except ValueError as message:
-        LOGGER.error(str(message))
+    except Exception as exc:
+        LOGGER.exception(exc)
         return {
-            'message': str(message),
+            'message': traceback.format_exc(),
             'error': True
         }
     return {
@@ -229,10 +229,19 @@ def save_to_python():
     model_id = payload['model_id']
     args_dict = json.loads(payload['args'])
 
-    cli.export_to_python(
-        save_filepath, model_id, args_dict)
-
-    return 'python script saved'
+    try:
+        cli.export_to_python(
+            save_filepath, model_id, args_dict)
+    except Exception as exc:
+        LOGGER.exception(exc)
+        return {
+            'message': traceback.format_exc(),
+            'error': True
+        }
+    return {
+        'message': 'Python script saved',
+        'error': False
+    }
 
 
 @app.route(f'/{PREFIX}/build_datastack_archive', methods=['POST'])
@@ -255,10 +264,10 @@ def build_datastack_archive():
             json.loads(payload['args']),
             payload['model_id'],
             payload['filepath'])
-    except Exception as message:
-        LOGGER.error(str(message))
+    except Exception as exc:
+        LOGGER.exception(exc)
         return {
-            'message': str(message),
+            'message': traceback.format_exc(),
             'error': True
         }
     return {

@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withTranslation } from 'react-i18next';
 
-import Alert from 'react-bootstrap/Alert';
 import Container from 'react-bootstrap/Container';
 import Spinner from 'react-bootstrap/Spinner';
 import Row from 'react-bootstrap/Row';
@@ -11,18 +10,13 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { MdFolderOpen } from 'react-icons/md';
 
-import Expire from '../Expire';
 import Portal from '../Portal';
 import ArgsForm from './ArgsForm';
 import SaveAsModal from '../SaveAsModal';
 import {
-  archiveDatastack,
   fetchValidation,
   fetchArgsEnabled,
   getDynamicDropdowns,
-  saveToPython,
-  writeParametersToFile,
-  writeMetadataFiles,
 } from '../../server_requests';
 import { argsDictFromObject, openDatastack } from '../../utils';
 import { ipcMainChannels } from '../../../main/ipcMainChannels';
@@ -96,16 +90,9 @@ class SetupTab extends React.Component {
       argsValid: false,
       argsEnabled: null,
       argsDropdownOptions: null,
-      saveAlerts: {},
       scrollEventCount: 0,
     };
 
-    this.saveDatastack = this.saveDatastack.bind(this);
-    this.savePythonScript = this.savePythonScript.bind(this);
-    this.saveJsonFile = this.saveJsonFile.bind(this);
-    this.exportMetadata = this.exportMetadata.bind(this);
-    this.setSaveAlert = this.setSaveAlert.bind(this);
-    this.removeSaveErrors = this.removeSaveErrors.bind(this);
     this.wrapInvestExecute = this.wrapInvestExecute.bind(this);
     this.investValidate = this.investValidate.bind(this);
     this.debouncedValidate = this.debouncedValidate.bind(this);
@@ -183,66 +170,6 @@ class SetupTab extends React.Component {
     }));
   }
 
-  /** Save the current invest arguments to a python script via datastack.py API.
-   *
-   * @param {string} filepath - desired path to the python script
-   * @returns {undefined}
-   */
-  async savePythonScript(filepath) {
-    const {
-      modelID,
-    } = this.props;
-    const args = argsDictFromObject(this.state.argsValues);
-    const payload = {
-      filepath: filepath,
-      model_id: modelID,
-      args: JSON.stringify(args),
-    };
-    const response = await saveToPython(payload);
-    this.setSaveAlert(response);
-  }
-
-  async saveJsonFile(datastackPath, relativePaths) {
-    const { modelID } = this.props;
-    const args = argsDictFromObject(this.state.argsValues);
-    const payload = {
-      filepath: datastackPath,
-      model_id: modelID,
-      relativePaths: relativePaths,
-      args: JSON.stringify(args),
-    };
-    const { message, error } = await writeParametersToFile(payload);
-    this.setSaveAlert(message, error);
-  }
-
-  async saveDatastack(datastackPath) {
-    const { modelID } = this.props;
-    const args = argsDictFromObject(this.state.argsValues);
-    const payload = {
-      filepath: datastackPath,
-      model_id: modelID,
-      args: JSON.stringify(args),
-    };
-    const key = window.crypto.getRandomValues(new Uint16Array(1))[0].toString();
-    this.setSaveAlert('archiving...', false, key);
-    const { message, error } = await archiveDatastack(payload);
-    this.setSaveAlert(message, error, key);
-  }
-
-  async exportMetadata() {
-    const { modelID } = this.props;
-    const args = argsDictFromObject(this.state.argsValues);
-    const payload = {
-      model_id: modelID,
-      args: JSON.stringify(args),
-    };
-    const key = window.crypto.getRandomValues(new Uint16Array(1))[0].toString();
-    this.setSaveAlert('generating metadata...', false, key);
-    const { message, error } = await writeMetadataFiles(payload);
-    console.log(message)
-    this.setSaveAlert(message, error, key);
-  }
-
   /** State updater for alert messages from various save buttons.
    *
    * @param {string} message - the message to display
@@ -256,32 +183,6 @@ class SetupTab extends React.Component {
    *
    * @returns {undefined}
    */
-  setSaveAlert(
-    message,
-    error = false,
-    key = window.crypto.getRandomValues(new Uint16Array(1))[0].toString()
-  ) {
-    this.setState({
-      saveAlerts: {
-        ...this.state.saveAlerts,
-        ...{ [key]: {
-          message,
-          error
-      }}}
-    });
-  }
-
-  removeSaveErrors() {
-    const alerts = this.state.saveAlerts;
-    Object.keys(alerts).forEach((key) => {
-      if (alerts[key].error) {
-        delete alerts[key];
-      }
-    });
-    this.setState({
-      saveAlerts: alerts
-    });
-  }
 
   async loadParametersFromFile(filepath) {
     const { modelID, switchTabs, t } = this.props;
@@ -549,7 +450,6 @@ class SetupTab extends React.Component {
       argsValidation,
       argsEnabled,
       argsDropdownOptions,
-      saveAlerts,
       scrollEventCount,
     } = this.state;
     const { t } = this.props;
@@ -564,30 +464,6 @@ class SetupTab extends React.Component {
         executeClicked,
         modelID,
       } = this.props;
-
-      const SaveAlerts = [];
-      Object.keys(saveAlerts).forEach((key) => {
-        const { message, error } = saveAlerts[key];
-        if (message) {
-          // Alert won't expire during archiving; will expire 4s after completion
-          // Alert won't expire when an error has occurred;
-          // will be hidden next time save modal opens
-          const alertExpires = (error || message === 'archiving...') ? 1e7 : 4000;
-          SaveAlerts.push(
-            <Expire
-              key={key}
-              className="d-inline"
-              delay={alertExpires}
-            >
-              <Alert
-                variant={error ? 'danger' : 'success'}
-              >
-                {t(message)}
-              </Alert>
-            </Expire>
-          );
-        }
-      });
 
       const buttonText = (
         executeClicked
@@ -644,13 +520,8 @@ class SetupTab extends React.Component {
             </OverlayTrigger>
             <SaveAsModal
               modelID={modelID}
-              savePythonScript={this.savePythonScript}
-              saveJsonFile={this.saveJsonFile}
-              saveDatastack={this.saveDatastack}
-              exportMetadata={this.exportMetadata}
-              removeSaveErrors={this.removeSaveErrors}
+              args={argsDictFromObject(argsValues)}
             />
-            {SaveAlerts}
           </Portal>
           <Portal elId={sidebarFooterElementId}>
             <Button

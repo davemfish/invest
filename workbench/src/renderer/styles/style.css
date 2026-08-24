@@ -574,10 +574,6 @@ exceed 100% of window.*/
       font-size: 1.25rem;
     }
   }
-  .alert {
-    margin-top: 1rem;
-    white-space: pre-wrap;
-  }
 }
 
 .sidebar-buttons .btn,
@@ -826,6 +822,11 @@ input[type=text]::placeholder {
   }
   svg {
     font-size: 1.125rem;
+  }
+  .alert {
+    margin-top: 1rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
   }
 }
 
