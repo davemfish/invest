@@ -279,10 +279,8 @@ class IOModel(ImmutableBaseModel):
             LOGGER.debug(f"Skipping metadata creation for {datasource_path}: {e}")
             return None
         resource.set_lineage(lineage_statement)
-        words = resource.get_keywords()  # pre-existing metadata can have keywords
-        words.extend(self.keywords)
-        words.extend(keywords_list)
-        resource.set_keywords(words)  # this setter removes duplicates
+        resource.keywords.update(self.keywords)
+        resource.keywords.update(keywords_list)
         self.configure_metadata(resource)
         resource.write(workspace=out_workspace)
         return resource.metadata_path
