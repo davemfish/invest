@@ -271,11 +271,17 @@ class IOModel(ImmutableBaseModel):
             str: the path of the metadata file that was written
 
         """
+        if not os.path.exists(datasource_path):
+            LOGGER.debug(
+                f"Skipping metadata creation for non-existent/non-local file: {datasource_path}")
+            return
         try:
             resource = geometamaker.describe(datasource_path, compute_stats=True)
-        except ValueError as e:
-            # TODO: now that this is an IOModel method, can we ever get here?
+        except (ValueError, OSError) as e:
+            # TODO: now that this is an IOModel method, can we ever get a ValueError?
             # Don't want function to fail bc can't create metadata due to invalid filetype
+            # OSError if the caller does not have permission to write, such as
+            # when generating metadata for inputs in a read-only location.
             LOGGER.debug(f"Skipping metadata creation for {datasource_path}: {e}")
             return None
         resource.set_lineage(lineage_statement)
