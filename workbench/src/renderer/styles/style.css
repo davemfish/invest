@@ -809,6 +809,10 @@ input[type=text]::placeholder {
       outline: 3px solid var(--invest-green);
       outline-offset: 3px;
     }
+    .option-header {
+      margin-left: 0.5rem;
+      font-weight: 600;
+    }
   }
   .form-text {
     display: block;
@@ -825,7 +829,7 @@ input[type=text]::placeholder {
   }
   .alert {
     margin-top: 1rem;
-    white-space: pre-wrap;
+    white-space: pre;
     overflow-x: auto;
   }
 }
