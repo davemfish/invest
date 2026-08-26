@@ -301,6 +301,10 @@ class TestMetadataFromSpec(unittest.TestCase):
             resource.get_field_description('SUP_DEMadm_cap').units,
             spec.format_unit(vector_spec.get_field('SUP_DEMadm_cap').units))
 
+    def test_write_metadata_for_inputs(self):
+        # TODO
+        pass
+
 
 class ResultsSuffixTests(unittest.TestCase):
     """Tests for natcap.invest.spec.ResultsSuffixInput."""
@@ -545,13 +549,13 @@ class InputTests(unittest.TestCase):
         )
         self.assertCountEqual(
             csv_input.get_keywords(),
-            [keywords.LULC.value, keywords.CARBON.value] + keywords.LULC.aliases)
+            [keywords.LULC.name, keywords.CARBON.name] + list(keywords.LULC.aliases))
         self.assertCountEqual(
             csv_input.get_keywords(include_children=False),
-            [keywords.LULC.value] + keywords.LULC.aliases)
+            [keywords.LULC.name] + list(keywords.LULC.aliases))
         self.assertCountEqual(
             csv_input.get_keywords(include_aliases=False),
-            [keywords.LULC.value, keywords.CARBON.value])
+            [keywords.LULC.name, keywords.CARBON.name])
 
     def test_get_keywords_irregular_csv_input(self):
         """Test that CSVInput.get_keywords works when columns=None."""
@@ -580,10 +584,10 @@ class InputTests(unittest.TestCase):
         )
         self.assertCountEqual(
             vector_input.get_keywords(),
-            [keywords.LULC.value, keywords.CARBON.value] + keywords.LULC.aliases)
+            [keywords.LULC.name, keywords.CARBON.name] + list(keywords.LULC.aliases))
         self.assertCountEqual(
             vector_input.get_keywords(include_children=False),
-            [keywords.LULC.value] + keywords.LULC.aliases)
+            [keywords.LULC.name] + list(keywords.LULC.aliases))
 
     def test_immutable_input(self):
         """Test that Input instances are immutable."""

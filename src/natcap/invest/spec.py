@@ -24,7 +24,7 @@ import pint
 import pygeoprocessing
 from pygeoprocessing.utils import GDALUseExceptions
 from pydantic import AfterValidator, BaseModel, ConfigDict, \
-    field_validator, model_serializer, model_validator
+    field_serializer, field_validator, model_serializer, model_validator
 import taskgraph
 
 from natcap.invest.file_registry import FileRegistry
@@ -237,6 +237,17 @@ class IOModel(ImmutableBaseModel):
     about: typing.Union[str, None] = None
     """User-facing description of the input/output"""
 
+    keywords: set[geometamaker.models.Keyword] = set()
+    """A list of keywords from a controlled vocabulary.
+
+    Keywords can be used to identify possible data sources that satisfy input
+    requirements.
+    """
+
+    @field_serializer('keywords')
+    def serialize_keywords(self, keywords):
+        return [keyword.model_dump() for keyword in keywords]
+
     def configure_metadata(self, resource):
         """Add metadata from this input/output to a geometamaker resource.
 
@@ -313,12 +324,6 @@ class Input(IOModel):
     Good examples: ``precipitation``, ``Kc factor``, ``valuation table``
 
     Bad examples: ``PRECIPITATION``, ``kc_factor``, ``table of valuation parameters``
-    """
-    keywords: list[natcap.invest.keywords.Keyword] = []
-    """A list of keywords from a controlled vocabulary.
-
-    Keywords can be used to identify possible data sources that satisfy input
-    requirements.
     """
 
     required: typing.Union[bool, str] = True
@@ -431,7 +436,7 @@ class Input(IOModel):
         keywords = []
         if self.keywords:
             for keyword in self.keywords:
-                keywords.append(keyword.value)
+                keywords.append(keyword.name)
                 if include_aliases:
                     keywords.extend(keyword.aliases)
         if include_children:
@@ -2467,11 +2472,8 @@ class ModelSpec(ImmutableBaseModel):
             """Serialize objects that are otherwise not JSON serializeable."""
             if isinstance(obj, pint.Unit):
                 return format_unit(obj)
-            # Sets are present in 'geometry_types' attributes of some args
-            # We don't need to worry about deserializing back to a set/array
-            # so casting to string is okay.
             elif isinstance(obj, set):
-                return str(obj)
+                return list(obj)
             elif isinstance(obj, types.FunctionType):
                 return str(obj)
             elif obj is int:

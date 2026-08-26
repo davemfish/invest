@@ -1,13 +1,13 @@
 from geometamaker.models import Keyword
 
 
-def GCMDKeyword(name, uuid, full_path, aliases=[]):
+def GCMDKeyword(name, uuid, full_path, aliases=()):
     url = f'https://cmr.earthdata.nasa.gov/kms/concept/{uuid}'
     vocabulary = 'https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords'
     return Keyword(name=name, url=url, vocabulary=vocabulary, aliases=aliases)
 
 
-def InvestKeyword(name, url='', definition='', aliases=[]):
+def InvestKeyword(name, url='', definition='', aliases=()):
     vocabulary = 'InVEST Keywords'
     return Keyword(name=name, url=url, vocabulary=vocabulary, aliases=aliases)
 
