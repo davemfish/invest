@@ -246,8 +246,12 @@ class IOModel(ImmutableBaseModel):
         Returns:
             None
         """
-        if self.about:
-            resource.set_description(self.about)
+        # There are currently no metadata attributes that make sense to
+        # populate for all `IOModel` types. `self.about` only makes sense
+        # as a resource description for `Output` files. For `Input` the
+        # about text tends to describe model-specific details for that input,
+        # rather than a description of the input itself.
+        pass
 
     def write_metadata_file(self, datasource_path, keywords_list=[],
                             lineage_statement='', out_workspace=None):
@@ -480,6 +484,18 @@ class Output(IOModel):
     """Defaults to True. If the input is only created under a certain condition
     (such as when running the model in a specific mode), provide a string
     expression that evaluates to a boolean to describe this condition."""
+
+    def configure_metadata(self, resource):
+        """Add metadata from this output to a geometamaker resource.
+
+        Args:
+            resource (geometamaker.Resource): metadata resource to update
+
+        Returns:
+            None
+        """
+        if self.about:
+            resource.set_description(self.about)
 
 
 class FileInput(Input):
