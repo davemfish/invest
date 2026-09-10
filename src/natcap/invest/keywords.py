@@ -41,6 +41,10 @@ class InvestKeyword(Keyword):
     vocabulary: str = 'InVEST Keywords'
 
 
+ABOVEGROUND_BIOMASS_CARBON = InvestKeyword(
+    value='ABOVEGROUND BIOMASS CARBON',
+    definition='The pool of Carbon stored in above-ground living biomass')
+
 ADMINISTRATIVE_DIVISIONS = GCMDKeyword(
     value='ADMINISTRATIVE DIVISIONS',
     uuid='1ae304de-252c-45da-8dd8-df99a281e4f4',
@@ -61,11 +65,9 @@ BATHYMETRY = GCMDKeyword(
     uuid='80d79c7e-6c64-4ada-bfcc-4093969758a5',
     full_path='EARTH SCIENCE > OCEANS > BATHYMETRY/SEAFLOOR TOPOGRAPHY > BATHYMETRY')
 
-BIOPHYSICAL_TABLE = InvestKeyword(
-    value='BIOPHYSICAL TABLE',
-    definition=(
-        'A table used by InVEST models typically used to define relationships'
-        ' between land cover classes and biophysical properties.'))
+BELOWGROUND_BIOMASS_CARBON = InvestKeyword(
+    value='BELOWGROUND BIOMASS CARBON',
+    definition='The pool of Carbon stored in below-ground living biomass')
 
 BUILDINGS = GCMDKeyword(
     value='BUILDINGS',
@@ -131,6 +133,10 @@ CROP_TYPE = GCMDKeyword(
     value='CROP TYPE',
     uuid='e210bb78-19b6-453c-8dcb-81e389601329',
     full_path='EARTH SCIENCE > AGRICULTURE > AGRICULTURAL PLANT SCIENCE > CROP TYPE')
+
+DEAD_BIOMASS_CARBON = InvestKeyword(
+    value='DEAD BIOMASS CARBON',
+    definition='The pool of Carbon stored in dead biomass')
 
 DEM = GCMDKeyword(
     value='DIGITAL ELEVATION/TERRAIN MODEL (DEM)',
@@ -391,6 +397,12 @@ SOIL_EROSION = GCMDKeyword(
     value='SOIL EROSION',
     uuid='6eef914d-ff9f-44b0-a3a6-3dcf911023d4',
     full_path='EARTH SCIENCE > LAND SURFACE > SOILS > SOIL EROSION')
+
+SOIL_ORGANIC_CARBON = GCMDKeyword(
+    value='SOIL ORGANIC CARBON (SOC)',
+    uuid='39a39084-ae04-421c-892b-f554133ca4e6',
+    full_path='EARTH SCIENCE > LAND SURFACE > SOILS > CARBON > SOIL ORGANIC CARBON (SOC)',
+    aliases=['SOIL ORGANIC CARBON'])
 
 SOIL_ROOTING_DEPTH = GCMDKeyword(
     value='SOIL ROOTING DEPTH',
