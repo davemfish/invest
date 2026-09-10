@@ -147,6 +147,10 @@ ELECTRICITY_COST = InvestKeyword(
     value='ELECTRICITY COST',
     definition='The monetary cost of electricity, typically per kilowatt-hour')
 
+ENERGY_GRID_CONNECTION_POINTS = InvestKeyword(
+    value='ENERGY GRID CONNECTION POINTS',
+    definition='Locations of connection points to an energy grid.')
+
 EVAPOTRANSPIRATION = GCMDKeyword(
     value='EVAPOTRANSPIRATION',
     uuid='26fc4850-7ba9-44d8-a156-5c623e17b72f',
@@ -435,10 +439,34 @@ WAVE_DIRECTION = GCMDKeyword(
     uuid='037ce518-b71f-4599-b37f-feab9cc9809d',
     full_path='EARTH SCIENCE > OCEANS > OCEAN WAVES > WAVE DIRECTION')
 
+WAVE_ENERGY_CAPACITY = InvestKeyword(
+    value='WAVE ENERGY CAPACITY',
+    definition='The maximum energy production of a wave energy-capturing machine')
+
+WAVE_ENERGY_PERFORMANCE = InvestKeyword(
+    value='WAVE ENERGY PERFORMANCE',
+    definition='The energy production of a wave energy-capturing machine given sea state conditions')
+
+WAVE_ENERGY_PRODUCTION = GCMDKeyword(
+    value='WAVE ENERGY PRODUCTION/USE',
+    uuid='62c1fec5-3512-4136-a060-ec2338a48296',
+    full_path='EARTH SCIENCE > HUMAN DIMENSIONS > ECONOMIC RESOURCES > ENERGY PRODUCTION/USE > WAVE ENERGY PRODUCTION/USE',
+    aliases=['WAVE ENERGY PRODUCTION'])
+
 WAVE_FETCH = GCMDKeyword(
     value='WAVE FETCH',
     uuid='09b326df-79b3-41b8-8998-e06344b0fe0d',
     full_path='EARTH SCIENCE > OCEANS > OCEAN WAVES > WAVE FETCH')
+
+WAVE_HEIGHT = GCMDKeyword(
+    value='WAVE HEIGHT',
+    uuid='0fc68280-1361-43e1-bc5a-40c49e9679b7',
+    full_path='EARTH SCIENCE > OCEANS > OCEAN WAVES > WAVE HEIGHT')
+
+WAVE_PERIOD = GCMDKeyword(
+    value='WAVE PERIOD',
+    uuid='99ea6719-b751-4a4f-95d4-aaa02e961bc1',
+    full_path='EARTH SCIENCE > OCEANS > OCEAN WAVES > WAVE PERIOD')
 
 WAVE_POWER = InvestKeyword(
     value='WAVE POWER',
@@ -449,15 +477,31 @@ WEATHER_EVENTS = GCMDKeyword(
     uuid='b7d562cf-9b9b-4461-900b-50423a8c4d29',
     full_path='EARTH SCIENCE > ATMOSPHERE > WEATHER EVENTS')
 
+WEIBULL_PARAMETERS = InvestKeyword(
+    value='WEIBULL PARAMETERS',
+    definition='Parameters that describe a Weibull distribution.')
+
 WIND_DIRECTION = GCMDKeyword(
     value='WIND DIRECTION',
     uuid='d78e5503-d78e-466d-97bb-e68d6e768a9d',
     full_path='EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND DIRECTION')
 
+WIND_ENERGY_PRODUCTION = GCMDKeyword(
+    value='WIND ENERGY PRODUCTION/USE',
+    uuid='b3a95e10-1c1d-41cf-8802-8bb1d3a41353',
+    full_path='EARTH SCIENCE > HUMAN DIMENSIONS > ECONOMIC RESOURCES > ENERGY PRODUCTION/USE > WIND ENERGY PRODUCTION/USE',
+    aliases=['WIND ENERGY PRODUCTION'])
+
 WIND_SPEED = GCMDKeyword(
     value='WIND SPEED',
     uuid='a7ce84a3-8329-4eb7-b5de-72d2dea8c6bf',
     full_path='EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND SPEED')
+
+WIND_TURBINE = InvestKeyword(
+    value='WIND TURBINE',
+    definition='A machine that converts wind into electricity.')
+
+
 
 
 def to_list():
