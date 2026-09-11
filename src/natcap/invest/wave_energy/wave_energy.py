@@ -283,7 +283,9 @@ MODEL_SPEC = spec.ModelSpec(
                 "Table of economic parameters for the wave energy machine. Required if"
                 " Run Valuation is selected."
             ),
-            keywords=[keywords.WAVE_ENERGY_ECONOMIC_PARAMETERS],
+            keywords=[
+                keywords.ELECTRICITY_COST, keywords.WAVE_ENERGY_CAPITAL_COSTS,
+                keywords.WAVE_ENERGY_CAPACITY],
             required="valuation_container",
             allowed="valuation_container",
             columns=[

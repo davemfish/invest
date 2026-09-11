@@ -326,6 +326,7 @@ MODEL_SPEC = spec.ModelSpec(
             id="turbine_parameters_path",
             name=gettext("turbine parameters"),
             about=gettext("A table of parameters specific to the type of turbine."),
+            keywords=[keywords.WIND_TURBINE, keywords.WIND_SPEED],
             orientation="row",
             columns=[
                 spec.NumberInput(

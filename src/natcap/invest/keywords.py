@@ -455,9 +455,17 @@ WAVE_ENERGY_CAPACITY = InvestKeyword(
     value='WAVE ENERGY CAPACITY',
     definition='The maximum energy production of a wave energy-capturing machine')
 
+WAVE_ENERGY_CAPITAL_COSTS = InvestKeyword(
+    value='WAVE ENERGY CAPITAL COSTS',
+    definition=(
+        'Economic costs of installing, connecting, operating, and'
+        ' maintaining a wave energy-capturing machine'))
+
 WAVE_ENERGY_PERFORMANCE = InvestKeyword(
     value='WAVE ENERGY PERFORMANCE',
-    definition='The energy production of a wave energy-capturing machine given sea state conditions')
+    definition=(
+        'The energy production of a wave energy-capturing machine'
+        ' given sea state conditions'))
 
 WAVE_ENERGY_PRODUCTION = GCMDKeyword(
     value='WAVE ENERGY PRODUCTION/USE',
