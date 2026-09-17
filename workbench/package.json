@@ -10,7 +10,7 @@
     "lint": "eslint --cache --color --ext .jsx,.js src",
     "test": "jest --runInBand --testPathIgnorePatterns /tests/binary_tests/ /tests/sampledata_linkcheck/",
     "test-main": "jest --runInBand --testMatch **/tests/main/*.test.js",
-    "test-renderer": "jest --runInBand --testMatch **/tests/renderer/*.test.js",
+    "test-renderer": "vitest run --dir tests/renderer/",
     "test-flask": "jest --runInBand --testMatch **/tests/invest/*.test.js",
     "test-electron-app": "jest --runInBand --testMatch **/tests/binary_tests/*.test.js",
     "test-sampledata-registry": "jest --runInBand --testMatch **/tests/sampledata_linkcheck/*.test.js",
@@ -108,6 +108,7 @@
     "react-icons": "^4.9.0",
     "rimraf": "^6.1.2",
     "vite": "^6.4.3",
+    "vitest": "^5.0.1",
     "yazl": "^3.3.1"
   }
 }
