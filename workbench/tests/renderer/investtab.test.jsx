@@ -3,8 +3,8 @@ import crypto from 'crypto';
 import React from 'react';
 import { ipcRenderer, shell } from 'electron';
 import { render, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
+import { describe, expect, test } from 'vitest';
 
 import InvestTab from '../../src/renderer/components/InvestTab';
 import SetupTab from '../../src/renderer/components/SetupTab';

@@ -1,10 +1,10 @@
 import React from 'react';
 import { ipcRenderer } from 'electron';
 import {
-  render, waitFor, waitForElementToBeRemoved, within
+  render, waitFor, within
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import '@testing-library/jest-dom';
+import { describe, expect, test } from 'vitest';
 
 import App from '../../src/renderer/app';
 import {
@@ -16,7 +16,7 @@ import {
   getDynamicDropdowns,
 } from '../../src/renderer/server_requests';
 import InvestJob from '../../src/renderer/InvestJob';
-import { ipcMainChannels } from '../../src/main/ipcMainChannels';
+import ipcMainChannels from '../../src/ipcMainChannels.json';
 import pkg from '../../package.json';
 
 jest.mock('../../src/renderer/server_requests');

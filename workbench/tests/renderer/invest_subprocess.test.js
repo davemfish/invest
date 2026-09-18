@@ -10,8 +10,8 @@ import {
   render, waitFor, within, act
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import '@testing-library/jest-dom';
 import fetch from 'node-fetch';
+import { describe, expect, test } from 'vitest';
 
 import {
   setupInvestRunHandlers,

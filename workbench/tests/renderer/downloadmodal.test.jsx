@@ -4,9 +4,10 @@ import {
   waitFor,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import { ipcRenderer, BrowserWindow } from 'electron';
+import { describe, expect, test } from 'vitest';
+
 import DataDownloadModal from '../../src/renderer/components/DataDownloadModal';
 import DownloadProgressBar from '../../src/renderer/components/DownloadProgressBar';
 import sampledata_registry from '../../src/renderer/components/DataDownloadModal/sampledata_registry.json';

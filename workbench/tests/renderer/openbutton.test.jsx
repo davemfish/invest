@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import { ipcRenderer } from 'electron';
+import { expect, test } from 'vitest';
 
 import OpenButton from '../../src/renderer/components/OpenButton';
 import { fetchDatastackFromFile } from '../../src/renderer/server_requests';

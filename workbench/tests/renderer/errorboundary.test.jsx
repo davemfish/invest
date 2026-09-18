@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { expect, test } from 'vitest';
 
 import ErrorBoundary from '../../src/renderer/components/ErrorBoundary';
 

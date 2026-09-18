@@ -1,10 +1,10 @@
 import React from 'react';
 import { ipcRenderer } from 'electron';
-import '@testing-library/jest-dom';
 import {
   within, render, waitFor, fireEvent, createEvent,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { describe, expect, test } from 'vitest';
 
 import { ipcMainChannels } from '../../src/main/ipcMainChannels';
 import {

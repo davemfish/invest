@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'vitest';
+
 import InvestJob from '../../src/renderer/InvestJob';
 
 describe('InvestJob', () => {
