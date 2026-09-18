@@ -14,11 +14,13 @@ even for APIs that would otherwise seem okay to call during a test.
 import os from 'os';
 import events from 'events';
 
+import { vi } from 'vitest';
+
 class MockIPC extends events.EventEmitter {
   constructor() {
     super();
-    this.handle = jest.fn();
-    this.invoke = jest.fn().mockImplementation(() => Promise.resolve());
+    this.handle = vi.fn();
+    this.invoke = vi.fn().mockImplementation(() => Promise.resolve());
     this.send = (channel, ...args) => {
       const event = {
         reply: (channel, response) => {
@@ -27,7 +29,7 @@ class MockIPC extends events.EventEmitter {
       };
       this.emit(channel, event, ...args);
     };
-    this.sendSync = jest.fn();
+    this.sendSync = vi.fn();
   }
 }
 const electronMockIPC = new MockIPC();
@@ -37,57 +39,57 @@ export const ipcRenderer = electronMockIPC;
 class MockApp extends events.EventEmitter {
   constructor() {
     super();
-    this.getPath = jest.fn().mockImplementation(
+    this.getPath = vi.fn().mockImplementation(
       () => os.tmpdir()
     );
-    this.setPath = jest.fn();
-    this.getName = jest.fn();
-    this.getVersion = jest.fn();
+    this.setPath = vi.fn();
+    this.getName = vi.fn();
+    this.getVersion = vi.fn();
   }
 }
 export const app = new MockApp();
 
 export class BrowserWindow {
   constructor() {
-    this.loadURL = jest.fn();
-    this.once = jest.fn();
-    this.on = jest.fn();
+    this.loadURL = vi.fn();
+    this.once = vi.fn();
+    this.on = vi.fn();
     this.webContents = {
-      on: jest.fn(),
+      on: vi.fn(),
       session: {
-        on: jest.fn(),
+        on: vi.fn(),
       },
       send: (channel, ...args) => {
         electronMockIPC.emit(channel, {}, ...args);
       },
-      downloadURL: jest.fn(),
+      downloadURL: vi.fn(),
     };
   }
 }
 
 export const dialog = {
-  showOpenDialog: jest.fn(),
-  showSaveDialog: jest.fn(),
+  showOpenDialog: vi.fn(),
+  showSaveDialog: vi.fn(),
 };
 
 export const Menu = {
-  buildFromTemplate: jest.fn(),
-  setApplicationMenu: jest.fn(),
+  buildFromTemplate: vi.fn(),
+  setApplicationMenu: vi.fn(),
 };
 
 export const nativeTheme = {};
 
 export const screen = {
-  getPrimaryDisplay: jest.fn().mockReturnValue({
+  getPrimaryDisplay: vi.fn().mockReturnValue({
     workAreaSize: { width: 800, height: 800 }
   })
 };
 
 export const shell = {
-  showItemInFolder: jest.fn(),
-  openExternal: jest.fn(),
+  showItemInFolder: vi.fn(),
+  openExternal: vi.fn(),
 };
 
 export const webUtils = {
-  getPathForFile: jest.fn((file) => file.name),
+  getPathForFile: vi.fn((file) => file.name),
 };

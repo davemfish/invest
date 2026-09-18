@@ -29,4 +29,8 @@ export default defineConfig({
     },
     emptyOutDir: true,
   },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['tests/jest.overrides.js'],
+  },
 });

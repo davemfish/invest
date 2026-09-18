@@ -4,7 +4,7 @@ import {
   render, waitFor, within
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import App from '../../src/renderer/app';
 import {
@@ -16,10 +16,11 @@ import {
   getDynamicDropdowns,
 } from '../../src/renderer/server_requests';
 import InvestJob from '../../src/renderer/InvestJob';
-import ipcMainChannels from '../../src/ipcMainChannels.json';
+import { ipcMainChannels } from '../../src/main/ipcMainChannels';
 import pkg from '../../package.json';
 
-jest.mock('../../src/renderer/server_requests');
+// TODO: need to mock all the exports?
+vi.mock('../../src/renderer/server_requests');
 
 const MOCK_MODEL_TITLE = 'Carbon';
 const MOCK_MODEL_ID = 'carbon';

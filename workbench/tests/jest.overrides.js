@@ -1,6 +1,10 @@
+import { vi } from 'vitest';
+vi.mock('electron');
+
 import fetch from 'node-fetch';
 
 import '../src/renderer/i18n/i18n';
+import api from '../src/preload/api';
 
 // debug logging is a bit noisy, not so useful during tests.
 if (!process.env.ELECTRON_LOG_LEVEL) {
@@ -10,7 +14,7 @@ if (!process.env.ELECTRON_LOG_LEVEL) {
 // Test for a jsdom env (as opposed to node), which means renderer tests.
 if (global.window) {
   // mock the work of preload.js here:
-  const api = require('../src/preload/api').default;
+  // const api = require('../src/preload/api').default;
   api.LANGUAGE = 'en';
   global.window.Workbench = api;
 

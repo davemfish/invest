@@ -10,12 +10,18 @@ export default defineConfig({
     sourcemap: 'inline',
     minify: false,
     outDir: path.join(PROJECT_ROOT, 'build/preload'),
-    target: 'chrome114',
+    // target: 'chrome114',
+    lib: {
+      entry: 'preload.js',
+      formats: ['cjs'],
+      fileName: () => 'preload.js',
+    },
     rollupOptions: {
-      input: ['preload.js'],
-      output: {
-        entryFileNames: 'preload.js',
-      },
+      external: ['electron'], // Don't bundle electron
+      // input: ['preload.js'],
+      // output: {
+      //   entryFileNames: 'preload.js',
+      // },
     },
     emptyOutDir: true,
   },

@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-const { contextBridge } = require('electron');
+// const { contextBridge } = require('electron');
+import { contextBridge } from 'electron';
 // TODO: not sure why but vite does not translate electron correctly for the browser
 // when using `import`. it results in a __dirname reference, which is not found in browser.
 // using require() works.
