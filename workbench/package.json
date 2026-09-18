@@ -23,31 +23,6 @@
     "token": "cd .. && make jprint-DATA_BASE_URL > workbench/resources/storage_token.txt",
     "dist": "yarn run token && cross-env DEBUG=electron-builder electron-builder build --config electron-builder-config.js"
   },
-  "jest": {
-    "reporters": [
-      [
-        "github-actions",
-        {
-          "silent": false
-        }
-      ],
-      [
-        "default",
-        {
-          "summaryThreshold": 2
-        }
-      ]
-    ],
-    "verbose": true,
-    "collectCoverage": true,
-    "setupFiles": [
-      "./tests/jest.overrides.js"
-    ],
-    "testEnvironment": "jsdom",
-    "clearMocks": true,
-    "restoreMocks": true,
-    "resetModules": true
-  },
   "keywords": [],
   "author": "Natural Capital Alliance",
   "license": "Apache-2.0",

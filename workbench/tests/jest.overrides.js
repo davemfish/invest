@@ -1,5 +1,10 @@
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 vi.mock('electron');
+vi.mock('localforage');
+// TODO: more global module __mocks__
+
+import { cleanup } from '@testing-library/react'
+import '@testing-library/jest-dom/vitest';
 
 import fetch from 'node-fetch';
 
@@ -27,6 +32,10 @@ if (global.window) {
 
   global.window.fetch = fetch;
 }
+
+afterEach(() => {
+  cleanup() // cleans up rendered react components
+})
 
 // Cause tests to fail on console.error messages
 // Taken from https://stackoverflow.com/questions/28615293/is-there-a-jest-config-that-will-fail-tests-on-console-warn/50584643#50584643

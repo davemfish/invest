@@ -608,7 +608,7 @@ describe('Main menu interactions', () => {
   test('Open Changelog Modal from menu', async () => {
     const currentVersion = pkg.version;
     const nonexistentVersion = '1.0.0';
-    jest.spyOn(window, 'fetch')
+    vi.spyOn(window, 'fetch')
       .mockResolvedValueOnce({
         ok: true,
         text: () => `
