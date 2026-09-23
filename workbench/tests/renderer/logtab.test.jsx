@@ -9,7 +9,7 @@ import crypto from 'crypto';
 
 import React from 'react';
 import { render } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import LogTab from '../../src/renderer/components/LogTab';
 import { setupInvestLogReaderHandler } from '../../src/main/setupInvestHandlers';

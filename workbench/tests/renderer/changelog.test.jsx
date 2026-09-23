@@ -1,13 +1,13 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import App from '../../src/renderer/app';
 import pkg from '../../package.json';
 import { getInvestModelIDs } from '../../src/renderer/server_requests';
 
-jest.mock('../../src/renderer/server_requests');
+vi.mock('../../src/renderer/server_requests');
 
 const MOCK_MODEL_TITLE = 'Carbon';
 const MOCK_MODEL_ID = 'carbon';
@@ -21,7 +21,7 @@ describe('Changelog', () => {
   const currentVersion = pkg.version;
   const nonexistentVersion = 'nonexistent-version';
   beforeEach(() => {
-    jest.spyOn(window, 'fetch')
+    vi.spyOn(window, 'fetch')
       .mockResolvedValue({
         ok: true,
         text: () => `

@@ -4,7 +4,7 @@ import {
   within, render, waitFor, fireEvent, createEvent,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { ipcMainChannels } from '../../src/main/ipcMainChannels';
 import {
@@ -15,7 +15,7 @@ import {
 } from '../../src/renderer/server_requests';
 import App from '../../src/renderer/app';
 
-jest.mock('../../src/renderer/server_requests');
+vi.mock('../../src/renderer/server_requests');
 
 const PLUGIN_SETTING_ITEM = {
   foo: {
@@ -235,7 +235,7 @@ describe('Manage Plugins modal', () => {
       }
       return Promise.resolve();
     });
-    const spy = jest.spyOn(ipcRenderer, 'send');
+    const spy = vi.spyOn(ipcRenderer, 'send');
     const { findByRole } = render(<App />);
     const pluginButton = await findByRole('button', { name: /Foo/ });
     await userEvent.click(pluginButton);
@@ -317,7 +317,7 @@ describe('Manage Plugins modal', () => {
       findByText, findByRole, findByLabelText,
     } = render(<App />);
 
-    const spy = jest.spyOn(ipcRenderer, 'send');
+    const spy = vi.spyOn(ipcRenderer, 'send');
     await userEvent.click(await findByRole('button', { name: 'menu' }));
     const managePluginsButton = await findByText(/Manage plugins/i);
     await userEvent.click(managePluginsButton);
@@ -377,7 +377,7 @@ describe('Manage Plugins modal', () => {
       findByText, findByRole, findByLabelText
     } = render(<App />);
 
-    const spy = jest.spyOn(ipcRenderer, 'send');
+    const spy = vi.spyOn(ipcRenderer, 'send');
     await userEvent.click(await findByRole('button', { name: 'menu' }));
     const managePluginsButton = await findByText(/Manage plugins/i);
     await userEvent.click(managePluginsButton);
@@ -417,35 +417,35 @@ describe('Manage Plugins modal', () => {
       } else if (channel === ipcMainChannels.HAS_MSVC) {
         return Promise.resolve(true);
       }
-  
+
       return Promise.resolve();
     });
-  
+
     const {
       findByText, findByRole, findByLabelText,
     } = render(<App />);
-  
+
     await userEvent.click(await findByRole('button', { name: 'menu' }));
     await userEvent.click(await findByText(/Manage plugins/i));
-  
+
     await userEvent.selectOptions(
       await findByLabelText('Install from'),
       'local path'
     );
-  
+
     const input = await findByLabelText('Local absolute path');
     const file = new File([], 'plugin-dir');
-  
+
     fireEvent.dragEnter(input, {
       dataTransfer: { files: [file] },
     });
-  
+
     expect(input).toHaveClass('input-dragging');
-  
+
     fireEvent.drop(input, {
       dataTransfer: { files: [file] },
     });
-  
+
     await waitFor(() => {
       expect(input).not.toHaveClass('input-dragging');
       expect(input).toHaveValue('plugin-dir');
@@ -465,38 +465,38 @@ describe('Manage Plugins modal', () => {
       } else if (channel === ipcMainChannels.HAS_MSVC) {
         return Promise.resolve(true);
       }
-  
+
       return Promise.resolve();
     });
-  
+
     const {
       findByText, findByRole, findByLabelText,
     } = render(<App />);
-  
+
     await userEvent.click(await findByRole('button', { name: 'menu' }));
     await userEvent.click(await findByText(/Manage plugins/i));
-  
+
     const div = await findByLabelText(
       'Configure plugin environments (Advanced)'
     );
     const input = await within(div).findByLabelText('foo');
-  
+
     const file = new File([], 'plugin-environment');
-  
+
     fireEvent.dragEnter(input, {
       dataTransfer: {
         files: [file],
       },
     });
-  
+
     expect(input).toHaveClass('input-dragging');
-  
+
     fireEvent.drop(input, {
       dataTransfer: {
         files: [file],
       },
     });
-  
+
     await waitFor(() => {
       expect(input).not.toHaveClass('input-dragging');
       expect(input).toHaveValue('plugin-environment');
@@ -513,39 +513,39 @@ describe('Manage Plugins modal', () => {
       } else if (channel === ipcMainChannels.HAS_MSVC) {
         return Promise.resolve(true);
       }
-  
+
       return Promise.resolve();
     });
-  
+
     const {
       findByText, findByRole, findByLabelText,
     } = render(<App />);
-  
+
     await userEvent.click(await findByRole('button', { name: 'menu' }));
     await userEvent.click(await findByText(/Manage plugins/i));
-  
+
     await userEvent.selectOptions(
       await findByLabelText('Install from'),
       'path'
     );
-  
+
     const input = await findByLabelText('Local absolute path');
     const file = new File([], 'plugin-directory');
-  
+
     fireEvent.dragEnter(input, {
       dataTransfer: {
         files: [file],
       },
     });
-  
+
     expect(input).toHaveClass('input-dragging');
-  
+
     fireEvent.dragLeave(input, {
       dataTransfer: {
         files: [file],
       },
     });
-  
+
     expect(input).not.toHaveClass('input-dragging');
   });
 
@@ -558,30 +558,30 @@ describe('Manage Plugins modal', () => {
       } else if (channel === ipcMainChannels.HAS_MSVC) {
         return Promise.resolve(true);
       }
-  
+
       return Promise.resolve();
     });
-  
+
     const {
       findByText, findByRole, findByLabelText,
     } = render(<App />);
-  
+
     await userEvent.click(await findByRole('button', { name: 'menu' }));
     await userEvent.click(await findByText(/Manage plugins/i));
-  
+
     const input = await findByLabelText('Git URL');
-  
+
     const file = new File([], 'plugin-directory');
     const dropEvent = createEvent.drop(input, {
       dataTransfer: {
         files: [file],
       },
     });
-    
-    const preventDefaultSpy = jest.spyOn(dropEvent, 'preventDefault');
-    
+
+    const preventDefaultSpy = vi.spyOn(dropEvent, 'preventDefault');
+
     fireEvent(input, dropEvent);
-    
+
     expect(preventDefaultSpy).toHaveBeenCalled();
     expect(input).toHaveValue('');
   });

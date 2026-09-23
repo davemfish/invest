@@ -23,8 +23,9 @@ async function getPortAndID(modelID) {
     port = await ipcRenderer.invoke(ipcMainChannels.GET_SETTING, `plugins.${modelID}.port`);
     id = await ipcRenderer.invoke(ipcMainChannels.GET_SETTING, `plugins.${modelID}.modelID`);
   } else {
+    console.log('ABOUT TO INVOKE', ipcRenderer)
     port = await ipcRenderer.invoke(ipcMainChannels.GET_SETTING, 'core.port');
-    id = modelID
+    id = modelID;
   }
   return { port, id };
 }
@@ -58,14 +59,21 @@ export async function getInvestModelIDs() {
  */
 export async function getSpec(modelID) {
   const { port, id } = await getPortAndID(modelID);
+  console.log('PORT, ID', port, id)
   return (
     window.fetch(`${HOSTNAME}:${port}/${PREFIX}/getspec?language=${LANGUAGE}`, {
       method: 'post',
       body: JSON.stringify(id),
       headers: { 'Content-Type': 'application/json' },
     })
-      .then((response) => response.json())
-      .catch((error) => logger.error(error.stack))
+      .then((response) => {
+        console.log('RESPONSE', response)
+        return response.json()
+      })
+      .catch((error) => {
+        console.log('ERROR', error);
+        logger.error(error.stack)
+      })
   );
 }
 

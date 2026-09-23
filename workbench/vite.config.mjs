@@ -34,5 +34,10 @@ export default defineConfig({
     setupFiles: ['tests/jest.overrides.js'],
     mockReset: true,
     restoreMocks: true,
+    server: {
+      deps: {
+        inline: ['child_process']
+      }
+    }
   },
 });

@@ -5,7 +5,6 @@ import {
   BrowserWindow,
   nativeTheme,
   Menu,
-  ipcMain
 } from 'electron';
 import contextMenu from 'electron-context-menu';
 
@@ -31,7 +30,6 @@ import {
   setupRemovePlugin,
   setupWindowsMSVCHandlers
 } from './setupAddRemovePlugin';
-import { ipcMainChannels } from './ipcMainChannels';
 import ELECTRON_DEV_MODE from './isDevMode';
 import { logger, setupRendererLogger } from './logger';
 import menuTemplate from './menubar';
@@ -43,6 +41,7 @@ import setupGetNCPUs from './setupGetNCPUs';
 import { setupIsNewVersion } from './setupIsNewVersion';
 import setupOpenExternalUrl from './setupOpenExternalUrl';
 import setupOpenLocalHtml from './setupOpenLocalHtml';
+import removeIpcMainListeners from './removeIpcMainListeners';
 
 process.on('uncaughtException', (err) => {
   logger.error(err);
@@ -194,12 +193,6 @@ export const createWindow = async () => {
   }
   return Promise.resolve(); // lets tests await createWindow(), then assert
 };
-
-export function removeIpcMainListeners() {
-  Object.values(ipcMainChannels).forEach((channel) => {
-    ipcMain.removeAllListeners(channel);
-  });
-}
 
 export function main() {
   // calling requestSingleInstanceLock on mac causes a crash

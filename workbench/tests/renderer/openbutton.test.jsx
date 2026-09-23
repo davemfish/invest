@@ -2,12 +2,12 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ipcRenderer } from 'electron';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import OpenButton from '../../src/renderer/components/OpenButton';
 import { fetchDatastackFromFile } from '../../src/renderer/server_requests';
 
-jest.mock('../../src/renderer/server_requests');
+vi.mock('../../src/renderer/server_requests');
 
 test('Open File: displays a tooltip on hover', async () => {
   const { findByRole, findByText, queryByText } = render(
@@ -76,7 +76,7 @@ test('Open File: presents error message on unrecognized model ID', async () => {
   const mockDialogData = { canceled: false, filePaths: [filename] };
   ipcRenderer.invoke.mockResolvedValue(mockDialogData);
   fetchDatastackFromFile.mockResolvedValue(mockDatastack);
-  jest.spyOn(window, 'alert').mockImplementation();
+  vi.spyOn(window, 'alert').mockImplementation();
   const { findByRole } = render(
     <OpenButton
       openInvestModel={() => {}}

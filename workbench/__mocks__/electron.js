@@ -16,11 +16,23 @@ import events from 'events';
 
 import { vi } from 'vitest';
 
+console.log("__ELECTRON__")
+const mockInvoke = vi.fn((channel, ...args) => {
+  console.log('MOCK INVOKE CALLED', 'channel:', channel, 'args:', args);
+  return Promise.resolve('HELLOOOO');
+});
+
 class MockIPC extends events.EventEmitter {
   constructor() {
     super();
     this.handle = vi.fn();
-    this.invoke = vi.fn().mockImplementation(() => Promise.resolve());
+    // this.invoke = vi.fn().mockImplementation(async () => {
+    //   console.log('INVOKE ORIG MODULE MOCK')
+    //   console.trace('Call stack:');
+    //   return Promise.resolve('HELLOOO')
+    // });
+    // this.invoke = vi.fn().mockResolvedValue('HELLLOOO')
+    this.invoke = mockInvoke;
     this.send = (channel, ...args) => {
       const event = {
         reply: (channel, response) => {

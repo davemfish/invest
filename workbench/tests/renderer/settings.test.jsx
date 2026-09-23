@@ -4,19 +4,19 @@ import {
   render, waitFor
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
   settingsStore,
   setupSettingsHandlers
 } from '../../src/main/settingsStore';
 import { ipcMainChannels } from '../../src/main/ipcMainChannels';
-import { removeIpcMainListeners } from '../../src/main/main';
+import removeIpcMainListeners from '../../src/main/removeIpcMainListeners';
 
 import { getSupportedLanguages } from '../../src/renderer/server_requests';
 import SettingsModal from '../../src/renderer/components/SettingsModal';
 
-jest.mock('../../src/renderer/server_requests');
+vi.mock('../../src/renderer/server_requests');
 
 describe('InVEST global settings: dialog interactions', () => {
   const nWorkersLabelText = 'Taskgraph n_workers parameter';
@@ -42,7 +42,7 @@ describe('InVEST global settings: dialog interactions', () => {
     const loggingLevel = 'DEBUG';
     const tgLoggingLevel = 'DEBUG';
     const languageValue = 'es';
-    const spyInvoke = jest.spyOn(ipcRenderer, 'invoke');
+    const spyInvoke = vi.spyOn(ipcRenderer, 'invoke');
 
     const {
       getByText, getByLabelText, findByText,

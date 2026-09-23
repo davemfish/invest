@@ -134,6 +134,8 @@ export function setupInvestRunHandlers() {
       // counter-intuitive, but w/ true: invest terminates when this shell terminates
       spawnOptions.detached = true;
     }
+    console.log("CALLING SPAWN IN HANDLER")
+    console.log(spawn)
     const investRun = spawn(cmd, cmdArgs, spawnOptions);
 
     // There's no general way to know that a spawned process started,

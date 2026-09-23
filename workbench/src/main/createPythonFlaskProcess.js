@@ -137,6 +137,8 @@ export async function createCoreServerProcess(_port = undefined) {
   logger.debug(`Started python process as PID ${pythonServerProcess.pid}`);
   const pid = await handleServerStartup(
     pythonServerProcess, 'core', `${HOSTNAME}:${port}/api/ready`);
+  console.log('PID')
+  console.log(pid)
   return pid;
 }
 

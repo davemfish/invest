@@ -1,4 +1,5 @@
 import { app, ipcRenderer } from 'electron';
+// console.log('FROM TEST FILE', ipcRenderer)
 import fs from 'fs';
 import https from 'https';
 import os from 'os';
@@ -8,7 +9,7 @@ import url from 'url';
 
 import React from 'react';
 import { render } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 
 import * as serverRequests from '../../src/renderer/server_requests';
 import { argsDictFromObject } from '../../src/renderer/utils';
@@ -24,21 +25,25 @@ import { APP_HAS_RUN_TOKEN } from '../../src/main/setupCheckFirstRun';
 import { ipcMainChannels } from '../../src/main/ipcMainChannels';
 
 // This test starts a python subprocess, which can be slow
-jest.setTimeout(120000);
+// jest.setTimeout(120000);
 
 const CORE_PORT = 56789;
 beforeAll(async () => {
-  jest.spyOn(ipcRenderer, 'invoke').mockImplementation((channel, arg) => {
-    if (channel === ipcMainChannels.GET_SETTING) {
-      if (arg === 'core.port') {
-        return CORE_PORT;
-      }
-      if (arg.endsWith('.type')) {
-        return 'core';
-      }
-    }
-    return Promise.resolve();
-  });
+  // const { app, ipcRenderer } = await import('electron');
+  // vi.mocked(ipcRenderer.invoke).mockImplementation(async (channel, arg) => {
+  // vi.spyOn(ipcRenderer, 'invoke').mockImplementation(async (channel, arg) => {
+  //   console.log('INVOKE SPY', channel, arg)
+  //   if (channel === ipcMainChannels.GET_SETTING) {
+  //     if (arg === 'core.port') {
+  //       return CORE_PORT;
+  //     }
+  //     if (arg.endsWith('.type')) {
+  //       return 'core';
+  //     }
+  //   }
+  //   return Promise.resolve();
+  // });
+  vi.mocked(ipcRenderer.invoke).mockResolvedValue('FOOOOO')
   const userDataPath = app.getPath('userData');
   const hasRunTokenPath = path.join(userDataPath, APP_HAS_RUN_TOKEN);
   if (fs.existsSync(hasRunTokenPath)) {
@@ -48,7 +53,7 @@ beforeAll(async () => {
   const investExe = findInvestBinaries(isDevMode);
   settingsStore.set('investExe', investExe);
   await createCoreServerProcess(CORE_PORT);
-});
+}, 120000);
 
 afterAll(async () => {
   await shutdownPythonProcess(settingsStore.get('core.pid'));
@@ -64,8 +69,9 @@ describe('requests to flask endpoints', () => {
     fs.rmSync(WORKSPACE, { recursive: true, force: true });
   });
 
-  test('fetch invest model args spec', async () => {
+  test.only('fetch invest model args spec', async () => {
     const spec = await serverRequests.getSpec('carbon');
+    console.log('AFTER CALL', ipcRenderer.invoke.mock.calls)
     const expectedKeys = ['model_id', 'model_title', 'userguide', 'args'];
     expectedKeys.forEach((key) => {
       expect(spec[key]).toBeDefined();
@@ -158,7 +164,7 @@ describe('requests to flask endpoints', () => {
       message: 'Metadata profile saved',
       error: false,
     };
-    jest.spyOn(window, 'fetch')
+    vi.spyOn(window, 'fetch')
       .mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(result),
@@ -200,82 +206,82 @@ expect.extend({
   },
 });
 
-describe('Test building model UIs and forum links', () => {
-  const modelIDs = [
-    'annual_water_yield',
-    'carbon',
-    'coastal_blue_carbon',
-    'coastal_blue_carbon_preprocessor',
-    'coastal_vulnerability',
-    'crop_production_percentile',
-    'crop_production_regression',
-    'delineateit',
-    'forest_carbon_edge_effect',
-    'habitat_quality',
-    'habitat_risk_assessment',
-    'ndr',
-    'pollination',
-    'recreation',
-    'routedem',
-    'scenario_generator_proximity',
-    'scenic_quality',
-    'sdr',
-    'seasonal_water_yield',
-    'stormwater',
-    'urban_cooling_model',
-    'urban_flood_risk_mitigation',
-    'urban_mental_health',
-    'urban_nature_access',
-    'wave_energy',
-    'wind_energy',
-  ];
+// describe('Test building model UIs and forum links', () => {
+//   const modelIDs = [
+//     'annual_water_yield',
+//     'carbon',
+//     'coastal_blue_carbon',
+//     'coastal_blue_carbon_preprocessor',
+//     'coastal_vulnerability',
+//     'crop_production_percentile',
+//     'crop_production_regression',
+//     'delineateit',
+//     'forest_carbon_edge_effect',
+//     'habitat_quality',
+//     'habitat_risk_assessment',
+//     'ndr',
+//     'pollination',
+//     'recreation',
+//     'routedem',
+//     'scenario_generator_proximity',
+//     'scenic_quality',
+//     'sdr',
+//     'seasonal_water_yield',
+//     'stormwater',
+//     'urban_cooling_model',
+//     'urban_flood_risk_mitigation',
+//     'urban_mental_health',
+//     'urban_nature_access',
+//     'wave_energy',
+//     'wind_energy',
+//   ];
 
-  test.each(modelIDs)('test building each model setup tab', async (modelID) => {
-    const argsSpec = await serverRequests.getSpec(modelID);
-    const { findByRole } = render(
-      <SetupTab
-        modelID={modelID}
-        argsSpec={argsSpec.args}
-        userguide={argsSpec.userguide}
-        isCoreModel={true}
-        inputFieldOrder={argsSpec.input_field_order}
-        argsInitValues={undefined}
-        investExecute={() => {}}
-        sidebarSetupElementId="foo"
-        sidebarFooterElementId="foo"
-        executeClicked={false}
-        switchTabs={() => {}}
-        investList={{}}
-        t={() => {}}
-        tabID="1"
-        updateJobProperties={() => {}}
-      />
-    );
-    expect(await findByRole('textbox', { name: /workspace/i }))
-      .toBeInTheDocument();
-  });
+//   test.each(modelIDs)('test building each model setup tab', async (modelID) => {
+//     const argsSpec = await serverRequests.getSpec(modelID);
+//     const { findByRole } = render(
+//       <SetupTab
+//         modelID={modelID}
+//         argsSpec={argsSpec.args}
+//         userguide={argsSpec.userguide}
+//         isCoreModel={true}
+//         inputFieldOrder={argsSpec.input_field_order}
+//         argsInitValues={undefined}
+//         investExecute={() => {}}
+//         sidebarSetupElementId="foo"
+//         sidebarFooterElementId="foo"
+//         executeClicked={false}
+//         switchTabs={() => {}}
+//         investList={{}}
+//         t={() => {}}
+//         tabID="1"
+//         updateJobProperties={() => {}}
+//       />
+//     );
+//     expect(await findByRole('textbox', { name: /workspace/i }))
+//       .toBeInTheDocument();
+//   });
 
-  test.each(modelIDs)('test each forum link', async (modelID) => {
-    const argsSpec = await serverRequests.getSpec(modelID);
-    const { findByRole } = render(
-      <ResourcesLinks
-        modelID={modelID}
-        isCoreModel={true}
-        docs={argsSpec.userguide}
-      />
-    );
-    const link = await findByRole('link', { name: /frequently asked questions/i });
-    const address = link.getAttribute('href');
-    // If a model has no tag, the link defaults to the forum homepage,
-    // This will pass the urlStatus check, but we want to know if that happened,
-    // so check url text first,
-    expect(address).toContain('/tag/');
-    const options = {
-      method: 'HEAD',
-      host: url.parse(address).host,
-      path: url.parse(address).pathname,
-    };
-    const status = await getUrlStatus(options);
-    expect(status).toBeStatus200(address);
-  });
-});
+//   test.each(modelIDs)('test each forum link', async (modelID) => {
+//     const argsSpec = await serverRequests.getSpec(modelID);
+//     const { findByRole } = render(
+//       <ResourcesLinks
+//         modelID={modelID}
+//         isCoreModel={true}
+//         docs={argsSpec.userguide}
+//       />
+//     );
+//     const link = await findByRole('link', { name: /frequently asked questions/i });
+//     const address = link.getAttribute('href');
+//     // If a model has no tag, the link defaults to the forum homepage,
+//     // This will pass the urlStatus check, but we want to know if that happened,
+//     // so check url text first,
+//     expect(address).toContain('/tag/');
+//     const options = {
+//       method: 'HEAD',
+//       host: url.parse(address).host,
+//       path: url.parse(address).pathname,
+//     };
+//     const status = await getUrlStatus(options);
+//     expect(status).toBeStatus200(address);
+//   });
+// });

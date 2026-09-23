@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import events from 'events';
-import { spawn, exec } from 'child_process';
+// import { spawn, exec } from 'child_process';
 import Stream from 'stream';
 
 import React from 'react';
@@ -11,14 +11,14 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import fetch from 'node-fetch';
-import { describe, expect, test } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import writeInvestParameters from '../../src/main/writeInvestParameters';
+import removeIpcMainListeners from '../../src/main/removeIpcMainListeners';
 import {
   setupInvestRunHandlers,
   setupInvestLogReaderHandler
 } from '../../src/main/setupInvestHandlers';
-import writeInvestParameters from '../../src/main/writeInvestParameters';
-import { removeIpcMainListeners } from '../../src/main/main';
 
 import App from '../../src/renderer/app';
 import {
@@ -30,10 +30,37 @@ import {
 } from '../../src/renderer/server_requests';
 import InvestJob from '../../src/renderer/InvestJob';
 
-jest.mock('node-fetch');
-jest.mock('child_process');
-jest.mock('../../src/renderer/server_requests');
-jest.mock('../../src/main/writeInvestParameters');
+vi.mock('node-fetch');
+// vi.mock('child_process');
+// vi.mock('child_process', async (importOriginal) => {
+//   const actual = await importOriginal();
+//   return {
+//     ...actual,
+//     exec: vi.fn(),
+//     execSync: vi.fn(),
+//     spawn: vi.fn()
+//   };
+// });
+const { exec: mockExec, execSync: mockExecSync, spawn: mockSpawn } = vi.hoisted(() => ({
+  exec: vi.fn(),
+  spawn: vi.fn(),
+  execSync: vi.fn()
+}));
+
+vi.mock('child_process', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    exec: mockExec,
+    execSync: mockExecSync,
+    spawn: mockSpawn
+  };
+});
+vi.mock('../../src/renderer/server_requests');
+vi.mock('../../src/main/writeInvestParameters');
+console.log("IN TEST")
+import { spawn, exec } from 'child_process';
+console.log(exec)
 
 describe('InVEST subprocess testing', () => {
   const spec = {
@@ -73,7 +100,7 @@ describe('InVEST subprocess testing', () => {
       read: () => {},
     });
     if (process.platform !== 'win32') {
-      jest.spyOn(process, 'kill')
+      vi.spyOn(process, 'kill')
         .mockImplementation(() => {
           mockInvestProc.emit('exit', null);
         });
@@ -82,7 +109,7 @@ describe('InVEST subprocess testing', () => {
         mockInvestProc.emit('exit', null);
       });
     }
-    spawn.mockImplementation(() => mockInvestProc);
+    spawn.mockImplementation((cmd, args, options) => mockInvestProc);
     return mockInvestProc;
   }
 
@@ -127,7 +154,7 @@ describe('InVEST subprocess testing', () => {
     await InvestJob.clearStore();
   });
 
-  test('exit without error - expect log & alert display', async () => {
+  test.only('exit without error - expect log & alert display', async () => {
     const tempWorkspace = fs.mkdtempSync(path.join(tempTestWorkspace, 'ws-'));
     const mockInvestProc = getMockedInvestProcess();
     const {

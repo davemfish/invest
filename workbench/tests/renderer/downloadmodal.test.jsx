@@ -6,7 +6,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ipcRenderer, BrowserWindow } from 'electron';
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import DataDownloadModal from '../../src/renderer/components/DataDownloadModal';
 import DownloadProgressBar from '../../src/renderer/components/DownloadProgressBar';
@@ -17,7 +17,7 @@ import setupDownloadHandlers from '../../src/main/setupDownloadHandlers';
 import { removeIpcMainListeners } from '../../src/main/main';
 import { ipcMainChannels } from '../../src/main/ipcMainChannels';
 
-jest.mock('../../src/renderer/server_requests');
+vi.mock('../../src/renderer/server_requests');
 
 const nModels = Object.keys(sampledata_registry).length;
 const modelName = Object.keys(sampledata_registry)[0];

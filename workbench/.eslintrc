@@ -16,8 +16,6 @@
         "airbnb",
         "plugin:jsdoc/recommended",
         "plugin:react/recommended",
-        "plugin:jest/recommended",
-        "plugin:jest/style",
     ],
     "settings": {
         "react": {

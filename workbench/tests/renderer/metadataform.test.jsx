@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import MetadataModal from '../../src/renderer/components/MetadataModal';
 import {
@@ -9,7 +9,7 @@ import {
   setGeoMetaMakerProfile,
 } from '../../src/renderer/server_requests';
 
-jest.mock('../../src/renderer/server_requests');
+vi.mock('../../src/renderer/server_requests');
 
 test('Metadata form interact and submit', async () => {
   const startingName = 'Alice';

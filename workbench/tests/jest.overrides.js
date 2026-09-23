@@ -1,7 +1,10 @@
 import { afterEach, vi } from 'vitest';
 vi.mock('electron');
 vi.mock('localforage');
-// TODO: more global module __mocks__
+vi.mock('electron-context-menu');
+vi.mock('electron-dl');
+vi.mock('electron-store');
+// vi.mock('child_process');
 
 import { cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest';
@@ -16,6 +19,7 @@ if (!process.env.ELECTRON_LOG_LEVEL) {
   process.env.ELECTRON_LOG_LEVEL = 'info';
 }
 
+console.log('API export', api.electron.ipcRenderer)
 // Test for a jsdom env (as opposed to node), which means renderer tests.
 if (global.window) {
   // mock the work of preload.js here:
@@ -34,8 +38,8 @@ if (global.window) {
 }
 
 afterEach(() => {
-  cleanup() // cleans up rendered react components
-})
+  cleanup(); // cleans up rendered react components
+});
 
 // Cause tests to fail on console.error messages
 // Taken from https://stackoverflow.com/questions/28615293/is-there-a-jest-config-that-will-fail-tests-on-console-warn/50584643#50584643

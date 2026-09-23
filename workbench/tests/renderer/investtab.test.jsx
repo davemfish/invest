@@ -4,7 +4,7 @@ import React from 'react';
 import { ipcRenderer, shell } from 'electron';
 import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import InvestTab from '../../src/renderer/components/InvestTab';
 import SetupTab from '../../src/renderer/components/SetupTab';
@@ -25,7 +25,7 @@ import setupOpenLocalHtml from '../../src/main/setupOpenLocalHtml';
 import { removeIpcMainListeners } from '../../src/main/main';
 import { ipcMainChannels } from '../../src/main/ipcMainChannels';
 
-jest.mock('../../src/renderer/server_requests');
+vi.mock('../../src/renderer/server_requests');
 
 const DEFAULT_JOB = new InvestJob({
   modelID: 'carbon',
@@ -73,7 +73,7 @@ describe('Run status Alert renders with status from a recent run', () => {
 
   afterEach(() => {
     removeIpcMainListeners();
-    jest.resetAllMocks();
+    // jest.resetAllMocks();
   });
 
   test.each([
@@ -150,7 +150,7 @@ describe('Open Workspace & View Results buttons', () => {
       },
     };
 
-    jest.spyOn(ipcRenderer, 'invoke');
+    vi.spyOn(ipcRenderer, 'invoke');
 
     const { findByRole } = renderInvestTab(job);
     const openWorkspaceBtn = await findByRole('button', { name: 'Open Workspace' })
@@ -169,7 +169,7 @@ describe('Open Workspace & View Results buttons', () => {
       },
     };
 
-    jest.spyOn(ipcRenderer, 'invoke');
+    vi.spyOn(ipcRenderer, 'invoke');
     ipcRenderer.invoke.mockResolvedValue('Error opening workspace');
 
     const { findByRole } = renderInvestTab(job);
@@ -194,7 +194,7 @@ describe('Open Workspace & View Results buttons', () => {
       htmlfile: 'report.html', // if this prop exists, the button will exist.
     };
 
-    jest.spyOn(ipcRenderer, 'send');
+    vi.spyOn(ipcRenderer, 'send');
 
     const { findByRole } = renderInvestTab(job);
     const button = await findByRole('button', { name: 'View Results' });
@@ -365,7 +365,7 @@ describe('Sidebar Buttons', () => {
       filePaths: []
     };
     ipcRenderer.invoke.mockResolvedValue(mockDialogData);
-    const spy = jest.spyOn(SetupTab.WrappedComponent.prototype, method);
+    const spy = vi.spyOn(SetupTab.WrappedComponent.prototype, method);
 
     const { findByText, findByLabelText, findByRole } = renderInvestTab();
     const saveAsButton = await findByText('Save as...');
@@ -557,7 +557,7 @@ describe('Sidebar Buttons', () => {
       filePaths: []
     };
     ipcRenderer.invoke.mockResolvedValue(mockDialogData);
-    const spy = jest.spyOn(SetupTab.WrappedComponent.prototype, 'loadParametersFromFile');
+    const spy = vi.spyOn(SetupTab.WrappedComponent.prototype, 'loadParametersFromFile');
 
     const { findByText } = renderInvestTab();
 
@@ -587,7 +587,7 @@ describe('Sidebar Buttons', () => {
     // It seemed impossible to spy on an instance of BrowserWindow
     // and its call to .loadUrl(), given our setup in __mocks__/electron.js,
     // so this will have to suffice:
-    const spy = jest.spyOn(ipcRenderer, 'send')
+    const spy = vi.spyOn(ipcRenderer, 'send')
       .mockImplementation(() => Promise.resolve());
 
     const { findByRole } = renderInvestTab();
@@ -600,7 +600,7 @@ describe('Sidebar Buttons', () => {
   });
 
   test('Plugin Documentation link points to userguide URL from plugin model spec and invokes OPEN_EXTERNAL_URL', async () => {
-    const spy = jest.spyOn(ipcRenderer, 'send')
+    const spy = vi.spyOn(ipcRenderer, 'send')
       .mockImplementation(() => Promise.resolve());
 
     const { findByRole, queryByRole } = renderInvestTab(new InvestJob({

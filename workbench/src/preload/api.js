@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 // const { ipcRenderer, webUtils } = require('electron')
 import { ipcRenderer, webUtils } from 'electron';
+console.log('API', ipcRenderer) // MockIPC
 // using `import` for electron messes with vite and yields a bad bundle.
 // `import`` is okay for local modules though
 import { ipcMainChannels } from '../main/ipcMainChannels';
@@ -43,8 +44,10 @@ export default {
   },
   electron: {
     ipcRenderer: {
-      invoke: (channel, ...args) => {
+      invoke: async (channel, ...args) => {
         if (Object.values(ipcMainChannels).includes(channel)) {
+          console.log('REAL INVOKE', channel, args);
+          console.log(ipcRenderer)
           return ipcRenderer.invoke(channel, ...args);
         }
         return undefined;

@@ -1,10 +1,10 @@
 import { ipcRenderer } from 'electron';
 import React from 'react';
 import {
-  createEvent, fireEvent, render, waitFor, within
+  fireEvent, render, waitFor, within
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import SetupTab from '../../src/renderer/components/SetupTab';
 import {
@@ -17,7 +17,7 @@ import setupOpenExternalUrl from '../../src/main/setupOpenExternalUrl';
 import { removeIpcMainListeners } from '../../src/main/main';
 import { ipcMainChannels } from '../../src/main/ipcMainChannels';
 
-jest.mock('../../src/renderer/server_requests');
+vi.mock('../../src/renderer/server_requests');
 
 const MODULE = 'carbon';
 
@@ -49,7 +49,7 @@ function baseArgsSpec(type) {
   }
   return spec;
 }
-const BASE_ARGS_ENABLED = {}
+const BASE_ARGS_ENABLED = {};
 Object.keys(BASE_MODEL_SPEC.args).forEach((arg) => {
   BASE_ARGS_ENABLED[arg] = true;
 });
@@ -290,7 +290,7 @@ describe('Arguments form interactions', () => {
   });
 
   test('Type fast & confirm validation waits for pause in typing', async () => {
-    const spy = jest.spyOn(SetupTab.WrappedComponent.prototype, 'investValidate');
+    const spy = vi.spyOn(SetupTab.WrappedComponent.prototype, 'investValidate');
     const spec = baseArgsSpec('workspace');
     spec.args.arg.required = true;
     const { findByLabelText } = renderSetupFromSpec(spec, INPUT_FIELD_ORDER);
@@ -306,7 +306,7 @@ describe('Arguments form interactions', () => {
   });
 
   test('Type slow & confirm validation waits for pause in typing', async () => {
-    const spy = jest.spyOn(SetupTab.WrappedComponent.prototype, 'investValidate');
+    const spy = vi.spyOn(SetupTab.WrappedComponent.prototype, 'investValidate');
     const spec = baseArgsSpec('workspace');
     spec.args.arg.required = true;
     const { findByLabelText } = renderSetupFromSpec(spec, INPUT_FIELD_ORDER);
@@ -364,7 +364,7 @@ describe('Arguments form interactions', () => {
   });
 
   test('Open info dialog, expect text & link', async () => {
-    const spy = jest.spyOn(ipcRenderer, 'send')
+    const spy = vi.spyOn(ipcRenderer, 'send')
       .mockImplementation(() => Promise.resolve());
     const spec = baseArgsSpec('workspace');
     const { findByText, findByRole } = renderSetupFromSpec(spec, INPUT_FIELD_ORDER);
@@ -1027,7 +1027,7 @@ describe('loadParametersFromFile', () => {
       args: {},
     };
     fetchDatastackFromFile.mockResolvedValue(mockDatastack);
-    jest.spyOn(window, 'alert').mockImplementation();
+    vi.spyOn(window, 'alert').mockImplementation();
 
     const { findByTestId } = renderSetupFromSpec(spec, inputFieldOrder);
     const setupForm = await findByTestId('setup-form');

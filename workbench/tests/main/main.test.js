@@ -1,5 +1,5 @@
 /**
- * @jest-environment node
+ * @vitest-environment node
  */
 
 /* Tests for main process code running in a node env.
@@ -15,11 +15,11 @@ import { spawnSync } from 'child_process';
 import { app, ipcMain } from 'electron';
 import yazl from 'yazl';
 import fetch from 'node-fetch';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import {
   createWindow,
   destroyWindow,
-  removeIpcMainListeners
 } from '../../src/main/main';
 import {
   checkFirstRun,
@@ -33,10 +33,11 @@ import extractZipInplace from '../../src/main/extractZipInplace';
 import { ipcMainChannels } from '../../src/main/ipcMainChannels';
 import investUsageLogger from '../../src/main/investUsageLogger';
 import { settingsStore } from '../../src/main/settingsStore';
+import removeIpcMainListeners from '../../src/main/removeIpcMainListeners';
 
-jest.mock('node-fetch');
-jest.mock('child_process');
-jest.mock('../../src/main/createPythonFlaskProcess');
+vi.mock('node-fetch');
+vi.mock('child_process');
+vi.mock('../../src/main/createPythonFlaskProcess');
 
 beforeEach(() => {
   // A mock for the call in findInvestBinaries
